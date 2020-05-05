@@ -178,26 +178,26 @@
 <span class="c1">#  SOFTWARE.</span>
 <span class="c1">#</span>
 <span class="c1">#</span>
-<span class="kn">from</span> <span class="nn">cervmongo.main</span> <span class="k">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">cervmongo.main</span> <span class="kn">import</span> <span class="p">(</span>
                 <span class="n">get_client</span><span class="p">,</span>
                 <span class="n">get_doc</span><span class="p">,</span>
                 <span class="n">SUPPORT_GRIDFS</span><span class="p">,</span>
                 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cervmongo.aio</span> <span class="k">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">cervmongo.aio</span> <span class="kn">import</span> <span class="p">(</span>
                 <span class="n">get_async_client</span><span class="p">,</span>
                 <span class="n">get_async_doc</span><span class="p">,</span>
                 <span class="n">SUPPORT_ASYNCIO_CLIENT</span><span class="p">,</span>
                 <span class="n">SUPPORT_ASYNCIO_BUCKET</span><span class="p">,</span>
                 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cervmongo.models</span> <span class="k">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">cervmongo.models</span> <span class="kn">import</span> <span class="p">(</span>
                 <span class="n">SUPPORT_PYDANTIC</span><span class="p">,</span>
                 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cervmongo.vars</span> <span class="k">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">cervmongo.vars</span> <span class="kn">import</span> <span class="p">(</span>
                 <span class="n">ASCENDING</span> <span class="k">as</span> <span class="n">ASC</span><span class="p">,</span>
                 <span class="n">DESCENDING</span> <span class="k">as</span> <span class="n">DESC</span><span class="p">,</span>
                 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cervmongo.config</span> <span class="k">import</span> <span class="n">Config</span> <span class="k">as</span> <span class="n">config</span>
-<span class="kn">from</span> <span class="nn">cervmongo</span> <span class="k">import</span> <span class="n">extra</span>
+<span class="kn">from</span> <span class="nn">cervmongo.config</span> <span class="kn">import</span> <span class="n">Config</span> <span class="k">as</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">cervmongo</span> <span class="kn">import</span> <span class="n">extra</span>
 <span class="kn">import</span> <span class="nn">cervmongo.extra.convenience</span> <span class="k">as</span> <span class="nn">convenience</span>
 
 <span class="n">quick_load_client</span> <span class="o">=</span> <span class="n">convenience</span><span class="o">.</span><span class="n">quick_load_client</span>

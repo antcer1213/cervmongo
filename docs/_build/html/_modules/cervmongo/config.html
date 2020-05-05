@@ -183,12 +183,12 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Config&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">cervmongo.utils</span> <span class="k">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">cervmongo.utils</span> <span class="kn">import</span> <span class="p">(</span>
                     <span class="n">getenv_boolean</span><span class="p">,</span>
                     <span class="n">logger</span><span class="p">,</span>
                     <span class="n">json_dump</span><span class="p">,</span>
                     <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">cervmongo.vars</span> <span class="k">import</span> <span class="n">MetaConfig</span>
+<span class="kn">from</span> <span class="nn">cervmongo.vars</span> <span class="kn">import</span> <span class="n">MetaConfig</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
 
@@ -264,9 +264,9 @@
     <span class="k">def</span> <span class="nf">generate_mongo_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;uses config class values to generate mongodb uri and returns connection string&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_REPLICA_SET</span><span class="p">:</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_URI</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;mongodb://</span><span class="si">{cls.MONGO_HOST}</span><span class="s2">:</span><span class="si">{cls.MONGO_PORT}</span><span class="s2">/</span><span class="si">{cls.MONGO_DB}</span><span class="s2">?replicaSet=</span><span class="si">{cls.MONGO_REPLICA_SET}</span><span class="s2">&quot;</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_URI</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;mongodb://</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_HOST</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_PORT</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_DB</span><span class="si">}</span><span class="s2">?replicaSet=</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_REPLICA_SET</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_URI</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;mongodb://</span><span class="si">{cls.MONGO_HOST}</span><span class="s2">:</span><span class="si">{cls.MONGO_PORT}</span><span class="s2">/</span><span class="si">{cls.MONGO_DB}</span><span class="s2">&quot;</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_URI</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;mongodb://</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_HOST</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_PORT</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_DB</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MONGO_URI</span></div>
 
 <div class="viewcode-block" id="Config.reload"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.config.Config.reload">[docs]</a>    <span class="nd">@classmethod</span>
