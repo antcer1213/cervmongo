@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="cervmongo-antcer1213", # Replace with your own username
+    name="cervmongo",
     version="0.1.0",
     author="Anthony Cervantes",
     author_email="anthony.cervantes@cerver.info",
