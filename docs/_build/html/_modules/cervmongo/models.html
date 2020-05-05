@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cervmongo.models &mdash; cervmongo 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> cervmongo
+          
+
+          
+            
+            <img src="../../_static/logo_cropped.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../cervmongo.html">cervmongo package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cervmongo</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../cervmongo.html">cervmongo</a> &raquo;</li>
+        
+      <li>cervmongo.models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cervmongo.models</h1><div class="highlight"><pre>
+<span></span><span class="c1">#  models.py</span>
+<span class="c1">#</span>
+<span class="c1">#  Copyright 2020 Anthony &quot;antcer1213&quot; Cervantes &lt;anthony.cervantes@cerver.info&gt;</span>
+<span class="c1">#</span>
+<span class="c1">#  MIT License</span>
+<span class="c1">#</span>
+<span class="c1">#  Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1">#  of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1">#  in the Software without restriction, including without limitation the rights</span>
+<span class="c1">#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1">#  copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1">#  furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#  The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1">#  copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#  THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1">#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1">#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1">#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1">#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1">#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1">#  SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">cervmongo.utils</span> <span class="k">import</span> <span class="n">snake2camel</span>
+<span class="kn">from</span> <span class="nn">cervmongo.utils</span> <span class="k">import</span> <span class="n">yaml_dump</span><span class="p">,</span> <span class="n">yaml_load</span><span class="p">,</span> <span class="n">sort_list</span>
+<span class="kn">from</span> <span class="nn">cervmongo.vars</span> <span class="k">import</span> <span class="p">(</span>
+                        <span class="n">DOC_ID</span><span class="p">,</span>
+                        <span class="n">DETAILS</span><span class="p">,</span>
+                        <span class="n">PAGINATION_SORT_FIELDS</span><span class="p">,</span>
+                        <span class="n">YAML</span><span class="p">,</span>
+                        <span class="n">JSON</span><span class="p">,</span>
+                        <span class="n">ASCENDING</span><span class="p">,</span>
+                        <span class="n">DESCENDING</span><span class="p">,</span>
+                        <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pymongo.cursor</span> <span class="k">import</span> <span class="n">Cursor</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pydantic</span> <span class="k">import</span> <span class="n">BaseConfig</span><span class="p">,</span> <span class="n">BaseModel</span>
+    <span class="n">SUPPORT_PYDANTIC</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">class</span> <span class="nc">DefaultModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Intended for use as a base class for externally-facing models.</span>
+<span class="sd">        Any models that inherit from this class will:</span>
+<span class="sd">        * accept fields using snake_case or camelCase keys</span>
+<span class="sd">        * use camelCase keys in the generated OpenAPI spec (when supported)</span>
+<span class="sd">        * have orm_mode on by default</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="n">BaseConfig</span><span class="p">):</span>
+            <span class="n">orm_mode</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">allow_population_by_field_name</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">alias_generator</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">snake2camel</span><span class="p">,</span> <span class="n">start_lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
+    <span class="n">SUPPORT_PYDANTIC</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="DefaultModel"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.DefaultModel">[docs]</a>    <span class="nd">@dataclass</span>
+    <span class="k">class</span> <span class="nc">DefaultModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Intended for use as a base class for externally-facing models.</span>
+<span class="sd">        Any models that inherit from this class will:</span>
+<span class="sd">        * accept fields using snake_case or camelCase keys</span>
+<span class="sd">        * use camelCase keys in the generated OpenAPI spec (when supported)</span>
+<span class="sd">        * create an orm_mode Config attrib and have it on by default</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DefaultModel.Config"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.DefaultModel.Config">[docs]</a>        <span class="k">class</span> <span class="nc">Config</span><span class="p">():</span>
+            <span class="n">orm_mode</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">allow_population_by_field_name</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">alias_generator</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">snake2camel</span><span class="p">,</span> <span class="n">start_lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_GenericResponse</span><span class="p">(</span><span class="n">DefaultModel</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">schema_extra</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;example&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{}</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+
+
+<div class="viewcode-block" id="GenericResponse"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.GenericResponse">[docs]</a><span class="k">class</span> <span class="nc">GenericResponse</span><span class="p">(</span><span class="n">_GenericResponse</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a premade web API friendly response object&quot;&quot;&quot;</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">__name__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;GenericResponse&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">_GenericResponse</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_StandardResponse</span><span class="p">(</span><span class="n">DefaultModel</span><span class="p">):</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Text</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+    <span class="n">details</span><span class="p">:</span> <span class="n">DETAILS</span> <span class="o">=</span> <span class="n">DETAILS</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">schema_extra</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;example&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="s2">&quot;000000&quot;</span><span class="p">,</span> <span class="s2">&quot;other&quot;</span><span class="p">:</span> <span class="s2">&quot;data&quot;</span><span class="p">},</span>
+                    <span class="s1">&#39;details&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;other&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+
+
+<div class="viewcode-block" id="StandardResponse"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.StandardResponse">[docs]</a><span class="k">class</span> <span class="nc">StandardResponse</span><span class="p">(</span><span class="n">_StandardResponse</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a premade web API friendly response object&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">_StandardResponse</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="YAMLStandardResponse"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.YAMLStandardResponse">[docs]</a><span class="k">class</span> <span class="nc">YAMLStandardResponse</span><span class="p">(</span><span class="n">_StandardResponse</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a premade web API friendly response object&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">_StandardResponse</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YAML</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">yaml_dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="MongoDictResponse"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoDictResponse">[docs]</a><span class="k">class</span> <span class="nc">MongoDictResponse</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;the normal response for a single document when using cervmongo.main.SyncIOClient or cervmongo.aio.AsyncIOClient&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MongoListResponse"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse">[docs]</a><span class="k">class</span> <span class="nc">MongoListResponse</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;the normal response for multiple documents when using cervmongo.main.SyncIOClient or cervmongo.aio.AsyncIOClient&quot;&quot;&quot;</span>
+    <span class="n">_sort</span> <span class="o">=</span> <span class="n">ASCENDING</span>
+    <span class="n">_index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">Cursor</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="n">cursor</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__self__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MongoListResponse.close"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Closes cursor or clears list&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+    <span class="c1"># ~ @property</span>
+    <span class="c1"># ~ def retrieved(self):</span>
+        <span class="c1"># ~ &quot;&quot;&quot;The number of documents retrieved so far&quot;&quot;&quot;</span>
+        <span class="c1"># ~ if self._cursor:</span>
+            <span class="c1"># ~ return self._cursor.retrieved</span>
+        <span class="c1"># ~ else:</span>
+            <span class="c1"># ~ return self._index + 1</span>
+
+<div class="viewcode-block" id="MongoListResponse.rewind"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse.rewind">[docs]</a>    <span class="k">def</span> <span class="nf">rewind</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;rewinds cursor, if any&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MongoListResponse.distinct"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse.distinct">[docs]</a>    <span class="k">def</span> <span class="nf">distinct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;_id&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;returns list of distinct values based on field, defaults to &#39;_id&#39;. supports dot notation for nested values.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span>
+            <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">distinct</span><span class="p">(</span><span class="n">field</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">field</span><span class="p">:</span>
+                    <span class="n">results</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                    <span class="n">fields</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># INFO: 0 start index</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">field</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span> <span class="o">==</span> <span class="n">total</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                                    <span class="k">try</span><span class="p">:</span>
+                                        <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">field</span><span class="p">)]</span>
+                                    <span class="k">except</span><span class="p">:</span>
+                                        <span class="k">continue</span>
+                                <span class="k">elif</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                                    <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">continue</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                                    <span class="k">try</span><span class="p">:</span>
+                                        <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">field</span><span class="p">)))</span>
+                                    <span class="k">except</span><span class="p">:</span>
+                                        <span class="k">continue</span>
+                                <span class="k">elif</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                                    <span class="n">results</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">continue</span>
+                    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">item</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">item</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MongoListResponse.count"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;returns the count of the number of records in cursor or list results&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MongoListResponse.sort"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse.sort">[docs]</a>    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;_id&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sorts cursor results or list results, default is cervmongo.ASC (int 1)</span>
+
+<span class="sd">        Options:</span>
+<span class="sd">            - cervmongo.ASC or 1</span>
+<span class="sd">            - cervmongo.DESC or -1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">sort</span> <span class="ow">in</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;sort must be option -1, 1&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sort</span> <span class="o">=</span> <span class="n">sort</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">sort</span><span class="p">([(</span><span class="n">key</span><span class="p">,</span> <span class="n">sort</span><span class="p">)])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__self__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sort</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">key</span><span class="p">:</span> <span class="n">sort_list</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">field</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">key</span><span class="p">:</span> <span class="n">sort_list</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">field</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="MongoListResponse.list"><a class="viewcode-back" href="../../cervmongo.html#cervmongo.models.MongoListResponse.list">[docs]</a>    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;returns a new list representation of the current cursor&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rewind</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">MongoListResponse</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Anthony &#34;antcer1213&#34; Cervantes
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

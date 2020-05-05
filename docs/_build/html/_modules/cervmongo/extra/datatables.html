@@ -1,0 +1,374 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cervmongo.extra.datatables &mdash; cervmongo 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> cervmongo
+          
+
+          
+            
+            <img src="../../../_static/logo_cropped.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../cervmongo.html">cervmongo package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cervmongo</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../../cervmongo.html">cervmongo</a> &raquo;</li>
+        
+      <li>cervmongo.extra.datatables</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cervmongo.extra.datatables</h1><div class="highlight"><pre>
+<span></span><span class="c1">#  datatables.py</span>
+<span class="c1">#</span>
+<span class="c1">#  Copyright 2020 Anthony &quot;antcer1213&quot; Cervantes &lt;anthony.cervantes@cerver.info&gt;</span>
+<span class="c1">#</span>
+<span class="c1">#  MIT License</span>
+<span class="c1">#</span>
+<span class="c1">#  Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1">#  of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1">#  in the Software without restriction, including without limitation the rights</span>
+<span class="c1">#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1">#  copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1">#  furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#  The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1">#  copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#  THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1">#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1">#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1">#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1">#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1">#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1">#  SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+
+<span class="c1"># translation for sorting between datatables and mongodb</span>
+<span class="n">order_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;asc&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="DataTablesServer"><a class="viewcode-back" href="../../../cervmongo.extra.html#cervmongo.extra.datatables.DataTablesServer">[docs]</a><span class="k">class</span> <span class="nc">DataTablesServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">collection</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection</span> <span class="o">=</span> <span class="n">collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+
+        <span class="c1"># values specified by the datatable for filtering, sorting, paging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_values</span> <span class="o">=</span> <span class="n">request</span>
+
+        <span class="c1"># connection to your mongodb (see pymongo docs).</span>
+        <span class="c1"># this is defaulted to localhost</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbh</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;mongodb://</span><span class="si">{0}</span><span class="s2">:</span><span class="si">{1}</span><span class="s2">/</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;socket_host&#39;</span><span class="p">],</span>
+                <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;socket_port&#39;</span><span class="p">],</span>
+                <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;db&#39;</span><span class="p">]))</span>
+
+        <span class="c1"># results from the db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># total in the table after filtering</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality_filtered</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># total in the table unfiltered</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_queries</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DataTablesServer.output_result"><a class="viewcode-back" href="../../../cervmongo.extra.html#cervmongo.extra.datatables.DataTablesServer.output_result">[docs]</a>    <span class="k">def</span> <span class="nf">output_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">output</span><span class="p">[</span><span class="s1">&#39;sEcho&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;sEcho&#39;</span><span class="p">]))</span>
+            <span class="n">output</span><span class="p">[</span><span class="s1">&#39;iTotalRecords&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">)</span>
+            <span class="n">output</span><span class="p">[</span><span class="s1">&#39;iTotalDisplayRecords&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality_filtered</span><span class="p">)</span>
+            <span class="n">aaData_rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_data</span><span class="p">:</span>
+                <span class="n">aaData_row</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+                    <span class="n">value_</span> <span class="o">=</span> <span class="n">return_value_from_dict</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">aaData_row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value_</span>
+                <span class="n">aaData_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aaData_row</span><span class="p">)</span>
+
+            <span class="n">output</span><span class="p">[</span><span class="s1">&#39;aaData&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aaData_rows</span>
+
+            <span class="k">return</span> <span class="n">output</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbh</span><span class="o">.</span><span class="n">PUT</span><span class="p">(</span><span class="s1">&#39;logs&#39;</span><span class="p">,</span> <span class="s1">&#39;datatable&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;output&#39;</span><span class="p">:</span> <span class="n">_traceback</span><span class="p">()})</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="DataTablesServer.run_queries"><a class="viewcode-back" href="../../../cervmongo.extra.html#cervmongo.extra.datatables.DataTablesServer.run_queries">[docs]</a>    <span class="k">def</span> <span class="nf">run_queries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># &#39;mydb&#39; is the actual name of your database</span>
+        <span class="n">mydb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbh</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">]</span>
+
+        <span class="c1"># pages has &#39;start&#39; and &#39;length&#39; attributes</span>
+        <span class="n">pages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paging</span><span class="p">()</span>
+
+        <span class="c1"># the term you entered into the datatable search</span>
+        <span class="n">_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtering</span><span class="p">()</span>
+
+        <span class="c1"># the document field you chose to sort</span>
+        <span class="n">sorting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span><span class="p">()</span>
+
+        <span class="c1"># get result from db to display on the current page</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mydb</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="n">_filter</span><span class="p">,</span>
+                                                           <span class="n">skip</span><span class="o">=</span><span class="n">pages</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                                                           <span class="n">limit</span><span class="o">=</span><span class="n">pages</span><span class="o">.</span><span class="n">length</span><span class="p">,</span>
+                                                           <span class="n">sort</span><span class="o">=</span><span class="n">sorting</span><span class="p">))</span>
+
+        <span class="c1"># length of filtered set</span>
+        <span class="n">length_</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mydb</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="n">_filter</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality_filtered</span> <span class="o">=</span> <span class="n">length_</span>
+
+        <span class="c1"># length of all results you wish to display in the datatable, unfiltered</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mydb</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="DataTablesServer.filtering"><a class="viewcode-back" href="../../../cervmongo.extra.html#cervmongo.extra.datatables.DataTablesServer.filtering">[docs]</a>    <span class="k">def</span> <span class="nf">filtering</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># build your filter spec</span>
+        <span class="n">_filter</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">check1</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sSearch&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">)</span>
+        <span class="n">check2</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;sSearch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check1</span> <span class="ow">and</span> <span class="n">check2</span><span class="p">:</span>
+
+            <span class="c1"># the term put into search is logically concatenated</span>
+            <span class="c1"># with &#39;or&#39; between all columns</span>
+            <span class="n">or_filter_on_all_columns</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+                <span class="n">column_filter</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="c1"># case insensitive partial string matching pulled from user</span>
+                <span class="c1"># input</span>
+                <span class="n">column_filter</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;$regex&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;sSearch&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;$options&#39;</span><span class="p">:</span> <span class="s1">&#39;i&#39;</span>
+                    <span class="p">}</span>
+                <span class="n">or_filter_on_all_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_filter</span><span class="p">)</span>
+
+            <span class="n">_filter</span><span class="p">[</span><span class="s1">&#39;$or&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">or_filter_on_all_columns</span>
+
+        <span class="c1"># individual column filtering - uncomment if needed</span>
+
+        <span class="c1">#and_filter_individual_columns = []</span>
+        <span class="c1">#for i in range(len(columns)):</span>
+        <span class="c1">#    if (request_values.has_key(&#39;sSearch_%d&#39; % i) and</span>
+        <span class="c1"># request_values[&#39;sSearch_%d&#39; % i] != &#39;&#39;):</span>
+        <span class="c1">#        individual_column_filter = {}</span>
+        <span class="c1">#        individual_column_filter[columns[i]] = {&#39;$regex&#39;:</span>
+        <span class="c1"># request_values[&#39;sSearch_%d&#39; % i], &#39;$options&#39;: &#39;i&#39;}</span>
+        <span class="c1">#        and_filter_individual_columns.append(individual_column_filter)</span>
+
+        <span class="c1">#if and_filter_individual_columns:</span>
+        <span class="c1">#    _filter[&#39;$and&#39;] = and_filter_individual_columns</span>
+
+        <span class="k">return</span> <span class="n">_filter</span></div>
+
+<div class="viewcode-block" id="DataTablesServer.sorting"><a class="viewcode-back" href="../../../cervmongo.extra.html#cervmongo.extra.datatables.DataTablesServer.sorting">[docs]</a>    <span class="k">def</span> <span class="nf">sorting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># mongo translation for sorting order</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iSortCol_0&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iSortingCols&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">):</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iSortingCols&#39;</span><span class="p">])</span> <span class="p">):</span>
+                <span class="c1"># column number</span>
+                <span class="n">column_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iSortCol_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
+                <span class="c1"># sort direction</span>
+                <span class="n">sort_direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;sSortDir_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
+
+                <span class="n">order</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">column_number</span><span class="p">],</span> <span class="n">order_dict</span><span class="p">[</span><span class="n">sort_direction</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">order</span></div>
+
+<div class="viewcode-block" id="DataTablesServer.paging"><a class="viewcode-back" href="../../../cervmongo.extra.html#cervmongo.extra.datatables.DataTablesServer.paging">[docs]</a>    <span class="k">def</span> <span class="nf">paging</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">pages</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;pages&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iDisplayStart&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iDisplayLength&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">):</span>
+            <span class="n">pages</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iDisplayStart&#39;</span><span class="p">])</span>
+            <span class="n">pages</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_values</span><span class="p">[</span><span class="s1">&#39;iDisplayLength&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">pages</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Anthony &#34;antcer1213&#34; Cervantes
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
