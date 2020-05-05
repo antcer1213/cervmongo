@@ -5,10 +5,6 @@
 
 A convenience-based approach to MongoDB w/ Python. Packaged due to excessive reuse in private projects, where it was used to facilitate agile, rapid development of multiple web applications. Database is intentionally loaded by default using URI (can be changed after instance is created), with an optional default collection param. Heads up, most commonly used methods of the client are in UPPERCASE, to ensure names are not taken by the parent classes and keep them nice and short.
 
-## Documentation
-
-Full documentation available [here](http://cerver.info/packages/cervmongo/).
-
 ## Installation
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install cervmongo.
@@ -16,6 +12,11 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install cervmon
 ```bash
 pip install cervmongo
 ```
+
+## Documentation
+
+Full documentation available [here](http://cerver.info/packages/cervmongo/).
+
 ## Usage
 
 ```python
