@@ -75,8 +75,8 @@ query_results = client.GET("test_col", {"key": "value"})
 cursor_paged_results = client.PAGINATED_QUERY(after=None, before=None, limit=5) # returns cursor-based initial page
 time_paged_results = client.PAGINATED_QUERY(sort="created_date", after=None, before=None, limit=5) # returns time-based initial page
 offset_paged_results = client.PAGINATED_QUERY(page=1, limit=5) # returns offset-based initial page
-count_of_multi_cols = client.GET(["test_col1", "test_col2], count=True) # returns list of counts
-multi_col_results = client.GET(["test_col1", "test_col2], {
+count_of_multi_cols = client.GET(["test_col1", "test_col2"], count=True) # returns list of counts
+multi_col_results = client.GET(["test_col1", "test_col2"], {
                 "$or": [
                     {"child": "value"},
                     {"related_child": "value"}

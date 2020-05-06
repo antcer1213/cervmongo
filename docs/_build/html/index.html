@@ -192,16 +192,16 @@
 <div class="section" id="cervmongo">
 <h1>cervmongo<a class="headerlink" href="#cervmongo" title="Permalink to this headline">¶</a></h1>
 <p>A convenience-based approach to MongoDB w/ Python. Packaged due to excessive reuse in private projects, where it was used to facilitate agile, rapid development of multiple web applications. Database is intentionally loaded by default using URI (can be changed after instance is created), with an optional default collection param. Heads up, most commonly used methods of the client are in UPPERCASE, to ensure names are not taken by the parent classes and keep them nice and short.</p>
-<div class="section" id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
-<p>Full documentation available <a class="reference external" href="http://cerver.info/packages/cervmongo/">here</a>.</p>
-</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Use the package manager <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> to install cervmongo.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install cervmongo
 </pre></div>
 </div>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Full documentation available <a class="reference external" href="http://cerver.info/packages/cervmongo/">here</a>.</p>
 </div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
@@ -260,8 +260,8 @@
 <span class="n">cursor_paged_results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">PAGINATED_QUERY</span><span class="p">(</span><span class="n">after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># returns cursor-based initial page</span>
 <span class="n">time_paged_results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">PAGINATED_QUERY</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="s2">&quot;created_date&quot;</span><span class="p">,</span> <span class="n">after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># returns time-based initial page</span>
 <span class="n">offset_paged_results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">PAGINATED_QUERY</span><span class="p">(</span><span class="n">page</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># returns offset-based initial page</span>
-<span class="n">count_of_multi_cols</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">GET</span><span class="p">([</span><span class="s2">&quot;test_col1&quot;</span><span class="p">,</span> <span class="s2">&quot;test_col2], count=True) # returns list of counts</span>
-<span class="n">multi_col_results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">GET</span><span class="p">([</span><span class="s2">&quot;test_col1&quot;</span><span class="p">,</span> <span class="s2">&quot;test_col2], {</span>
+<span class="n">count_of_multi_cols</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">GET</span><span class="p">([</span><span class="s2">&quot;test_col1&quot;</span><span class="p">,</span> <span class="s2">&quot;test_col2&quot;</span><span class="p">],</span> <span class="n">count</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># returns list of counts</span>
+<span class="n">multi_col_results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">GET</span><span class="p">([</span><span class="s2">&quot;test_col1&quot;</span><span class="p">,</span> <span class="s2">&quot;test_col2&quot;</span><span class="p">],</span> <span class="p">{</span>
                 <span class="s2">&quot;$or&quot;</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span><span class="s2">&quot;child&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">},</span>
                     <span class="p">{</span><span class="s2">&quot;related_child&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">}</span>
