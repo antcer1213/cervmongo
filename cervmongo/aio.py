@@ -677,7 +677,7 @@ class AsyncIODoc(AsyncIOClient):
         else:
             self.schema = {}
 
-        super(AsyncIOClient, self).__init__(self.MONGO_URI)
+        AsyncIOClient.__init__(self, self.MONGO_URI)
 
         # INFO: If class has a _UNIQUE_ID assigned, create unique index
         if self._UNIQUE_ID:

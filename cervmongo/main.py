@@ -108,7 +108,7 @@ having some automated conveniences and default argument values.
                                 'logging_cond_delete'):
                 setattr(self, kwarg.upper(), kwargs.pop(kwarg))
 
-        super(MongoClient, self).__init__(self._MONGO_URI, **kwargs)
+        MongoClient.__init__(self, self._MONGO_URI, **kwargs)
 
         db = self.get_default_database()
         if not getattr(db, "name", None):
@@ -663,7 +663,7 @@ class SyncIODoc(SyncIOClient):
         else:
             self.schema = {}
 
-        super(SyncIOClient, self).__init__(self._MONGO_URI, **kwargs)
+        SyncIOClient.__init__(self, self._MONGO_URI, **kwargs)
 
         # INFO: If class has a _UNIQUE_ID assigned, create unique index
         if self._UNIQUE_ID:
