@@ -221,7 +221,7 @@ Available pagination methods:
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
-        if isinstance(sort, ENUM):
+        if isinstance(sort, ENUM.__constraints__):
             sort = sort.value
 
         total_docs = await self.GET(collection, query=query, count=True, empty=0)
@@ -272,9 +272,9 @@ Available pagination methods:
             "data": results,
             "details": {
                 "pagination_method": pagination_method,
-                "query": self.JSON_DUMP(query),
-                "unique_id": self._UNIQUE_ID,
+                "query": json_dump(query),
                 "sort": sort,
+                "unique_id": getattr(self, "_UNIQUE_ID", "_id"),
                 "total": total_docs,
                 "count": len(results),
                 "limit": limit
@@ -433,21 +433,20 @@ Available pagination methods:
         for record in records:
             await self.PATCH(collection, record, {"$unset": {field: value}})
 
-    async def GET(self, collection, record=None, query:dict={}, sort:int=1, key:str="_id", lst:bool=None, count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, one:bool=False, distinct:str="_id", **kwargs):
+    async def GET(self, collection, record=None, sort:int=1, key:str="_id", lst:bool=None, count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
         db = self.get_default_database()
-        if not collection:
-            collection = self._DEFAULT_COLLECTION
-        assert collection, "collection must be of type str"
+        collection = collection or self._DEFAULT_COLLECTION
+        assert collection, "collection not provided"
 
         if not isinstance(collection, (list, tuple, types.GeneratorType)):
             collection = [collection]
-
-        cols = list(collection)
-        record = self._process_record_id_type(record)[0]
+        cols = list(set(collection))
         results = []
         number_of_results = len(cols)
-
         query = kwargs.pop("query", {})
+
+        if distinct == True:
+            distinct = "_id"
 
         if record:
             record, _one = self._process_record_id_type(record)
@@ -462,8 +461,11 @@ Available pagination methods:
 
             if any([query, not record and not search]):
                 if count:
-                    results.append(await collection.count_documents(query, **kwargs))
-                elif lst:
+                    if query:
+                        results.append(await collection.count_documents(query, **kwargs))
+                    else:
+                        results.append(collection.estimated_document_count(**kwargs))
+                elif distinct:
                     cursor = await collection.distinct(distinct, filter=query, **kwargs)
                     results.append(sorted(cursor))
                 elif perpage:
@@ -477,7 +479,7 @@ Available pagination methods:
                     if after or before:
                         if after:
                             sort_value, _id_value = after.split("_")
-                            _id_value = ObjectId(_id_value)
+                            _id_value = DOC_ID(_id_value)
                             query["$and"].append({"$or": [
                                             {key: {"$lt": _id_value}}
                                         ]})
@@ -486,7 +488,7 @@ Available pagination methods:
                                 query["$and"][-1]["$or"].append({key: {"$lt": sort_value}, "_id": {"$lt": _id_value}})
                         elif before:
                             sort_value, _id_value = before.split("_")
-                            _id_value = ObjectId(_id_value)
+                            _id_value = DOC_ID(_id_value)
                             query["$and"].append({"$or": [
                                             {key: {"$gt": _id_value}}
                                         ]})
@@ -506,7 +508,7 @@ Available pagination methods:
                 try:
                     if count:
                         results.append(await cursor.count_documents({"$text": {"$search": search}}))
-                    elif lst:
+                    elif distinct:
                         results.append(await collection.distinct(distinct, filter={"$text": {"$search": search}}))
                     else:
                         cursor = collection.find({"$text": {"$search": search}})
@@ -519,7 +521,7 @@ Available pagination methods:
                     cursor = await collection.command('textIndex', search=search)
                     if count:
                         results.append(cursor.count())
-                    elif lst:
+                    elif distinct:
                         results.append(cursor.distinct(distinct))
                     else:
                         if perpage:
@@ -625,15 +627,19 @@ class AsyncIODoc(AsyncIOClient):
         Custom MongoClient subclass with customizations for creating
         standardized documents and adding json schema validation.
     """
+    _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
     _DEFAULT_COLLECTION:str = None
     _UNIQUE_ID:str = None
     _TEMPLATE_PATH:str = None
     _SCHEMA_PATH:str = None
     _MARSHMALLOW:str = False
-    _DEFAULT_VALUES:dict = {}
-    _RESTRICTED_KEYS:typing.Union[typing.List, typing.Tuple] = []
+    _DEFAULT_VALUES:dict = None
+    _RESTRICTED_KEYS:list = None
 
-    def __init__(self, _id=None, collection=None, template_path=None, schema_path=None, unique_id=None, **kwargs):
+    def __init__(self, _id=None, collection=None, mongo_uri=None, template_path=None, schema_path=None, unique_id=None, **kwargs):
+        self._MONGO_URI = mongo_uri or self._MONGO_URI
+        if callable(self._MONGO_URI):
+            self._MONGO_URI = self._MONGO_URI()
         # INFO: set default collection
         self._DEFAULT_COLLECTION = collection or self._DEFAULT_COLLECTION
         assert self._DEFAULT_COLLECTION, "collection must be of type str"
@@ -643,10 +649,14 @@ class AsyncIODoc(AsyncIOClient):
         self._SCHEMA_PATH = schema_path or self._SCHEMA_PATH
         # INFO: sets the unique id field for the document, if any (cannot be _id)
         self._UNIQUE_ID = unique_id or self._UNIQUE_ID
+        # INFO: sets an empty list if restricted_keys is None
+        self._RESTRICTED_KEYS = self._RESTRICTED_KEYS or []
+        # INFO: sets an empty dict if restricted_keys is None
+        self._DEFAULT_VALUES = self._DEFAULT_VALUES or {}
 
         for kwarg in kwargs.keys():
             if kwarg.lower() in ('marshmallow', 'default_values', 'restricted_keys'):
-                setattr(self, kwarg.upper(), kwargs.pop(kwarg))
+                setattr(self, "_{}".format(kwarg.upper()), kwargs.pop(kwarg))
 
         # Initial Record object with template else start blank dict
         if self._TEMPLATE_PATH:
@@ -677,7 +687,7 @@ class AsyncIODoc(AsyncIOClient):
         else:
             self.schema = {}
 
-        AsyncIOClient.__init__(self, self.MONGO_URI)
+        AsyncIOClient.__init__(self, **kwargs)
 
         # INFO: If class has a _UNIQUE_ID assigned, create unique index
         if self._UNIQUE_ID:
@@ -686,11 +696,11 @@ class AsyncIODoc(AsyncIOClient):
 
         self.load(_id)
 
-    def __enter__(self):
-        return self
+    # ~ def __enter__(self):
+        # ~ return self
 
-    def __exit__(self):
-        self.close()
+    # ~ def __exit__(self):
+        # ~ self.close()
 
     def _process_restrictions(self, record:dict=None):
         """removes restricted keys from record and return record"""

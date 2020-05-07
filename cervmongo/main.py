@@ -81,8 +81,8 @@ def get_doc():
 
 class SyncIOClient(MongoClient):
     """
-High-level MongoClient subclass with additional methods added for ease-of-use,
-having some automated conveniences and default argument values.
+        High-level MongoClient subclass with additional methods added for ease-of-use,
+        having some automated conveniences and default argument values.
     """
     _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
     _DEFAULT_COLLECTION = None
@@ -212,7 +212,7 @@ Available pagination methods:
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
-        if isinstance(sort, ENUM):
+        if isinstance(sort, ENUM.__constraints__):
             sort = sort.value
 
         total_docs = self.GET(collection, query=query, count=True, empty=0)
@@ -264,8 +264,8 @@ Available pagination methods:
             "details": {
                 "pagination_method": pagination_method,
                 "query": json_dump(query),
-                "unique_id": self._UNIQUE_ID,
                 "sort": sort,
+                "unique_id": getattr(self, "_UNIQUE_ID", "_id"),
                 "total": total_docs,
                 "count": len(results),
                 "limit": limit
@@ -485,7 +485,6 @@ Available pagination methods:
                                 sort_value = dateparse(sort_value)
                                 query["$and"][-1]["$or"].append({key: {"$gt": sort_value}, "_id": {"$gt": _id_value}})
 
-
                     cursor = collection.find(query, fields, **kwargs).sort([(key, -1)]).limit(limit)
                     results.append(MongoListResponse(cursor))
                 elif one:
@@ -611,15 +610,19 @@ class SyncIODoc(SyncIOClient):
         Custom MongoClient subclass with customizations for creating
         standardized documents and adding json schema validation.
     """
+    _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
     _DEFAULT_COLLECTION:str = None
     _UNIQUE_ID:str = None
     _TEMPLATE_PATH:str = None
     _SCHEMA_PATH:str = None
     _MARSHMALLOW:str = False
-    _DEFAULT_VALUES:dict = {}
-    _RESTRICTED_KEYS:typing.Union[typing.List, typing.Tuple] = []
+    _DEFAULT_VALUES:dict = None
+    _RESTRICTED_KEYS:list = None
 
-    def __init__(self, _id=None, collection=None, template_path=None, schema_path=None, unique_id=None, **kwargs):
+    def __init__(self, _id=None, collection=None, mongo_uri=None, template_path=None, schema_path=None, unique_id=None, **kwargs):
+        self._MONGO_URI = mongo_uri or self._MONGO_URI
+        if callable(self._MONGO_URI):
+            self._MONGO_URI = self._MONGO_URI()
         # INFO: set default collection
         self._DEFAULT_COLLECTION = collection or self._DEFAULT_COLLECTION
         assert self._DEFAULT_COLLECTION, "collection must be of type str"
@@ -629,10 +632,15 @@ class SyncIODoc(SyncIOClient):
         self._SCHEMA_PATH = schema_path or self._SCHEMA_PATH
         # INFO: sets the unique id field for the document, if any (cannot be _id)
         self._UNIQUE_ID = unique_id or self._UNIQUE_ID
+        # INFO: sets an empty list if restricted_keys is None
+        self._RESTRICTED_KEYS = self._RESTRICTED_KEYS or []
+        # INFO: sets an empty dict if restricted_keys is None
+        self._DEFAULT_VALUES = self._DEFAULT_VALUES or {}
+
 
         for kwarg in kwargs.keys():
             if kwarg.lower() in ('marshmallow', 'default_values', 'restricted_keys'):
-                setattr(self, kwarg.upper(), kwargs.pop(kwarg))
+                setattr(self, "_{}".format(kwarg.upper()), kwargs.pop(kwarg))
 
         # Initial Record object with template else start blank dict
         if self._TEMPLATE_PATH:
@@ -643,7 +651,7 @@ class SyncIODoc(SyncIOClient):
             elif isinstance(self._TEMPLATE_PATH, dict):
                 template = self._TEMPLATE_PATH
             else:
-                raise TypeError("TEMPLATE_PATH is invalid type '{}', valid types are dict and str".format(type(self._TEMPLATE_PATH)))
+                raise TypeError("_TEMPLATE_PATH is invalid type '{}', valid types are dict and str".format(type(self._TEMPLATE_PATH)))
             parent_found = template.pop("__parent__", None)
             while parent_found:
                 parent_full_path = os_path.join(Config.JSON_SAMPLE_PATH, parent_found)
@@ -663,7 +671,7 @@ class SyncIODoc(SyncIOClient):
         else:
             self.schema = {}
 
-        SyncIOClient.__init__(self, self._MONGO_URI, **kwargs)
+        SyncIOClient.__init__(self, **kwargs)
 
         # INFO: If class has a _UNIQUE_ID assigned, create unique index
         if self._UNIQUE_ID:
@@ -672,11 +680,11 @@ class SyncIODoc(SyncIOClient):
 
         self.load(_id)
 
-    def __enter__(self):
-        return self
+    # ~ def __enter__(self):
+        # ~ return self
 
-    def __exit__(self):
-        self.close()
+    # ~ def __exit__(self):
+        # ~ self.close()
 
     def _process_restrictions(self, record:dict=None):
         """removes restricted keys from record and return record"""

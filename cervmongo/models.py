@@ -89,14 +89,27 @@ class GenericResponse(_GenericResponse):
     def __name__(self):
         return "GenericResponse"
     def __init__(self, *args, **kwargs):
-        if args:
-            data = args[0]
-            if isinstance(data, (dict, _GenericResponse)):
-                return super().__init__(**dict(data))
+        if SUPPORT_PYDANTIC:
+            if args:
+                data = args[0]
+                if isinstance(data, (dict, _GenericResponse)):
+                    return super().__init__(**dict(data))
+                else:
+                    return super().__init__(*data)
             else:
-                return super().__init__(*data)
+                return super().__init__(*args, **kwargs)
         else:
-            return super().__init__(*args, **kwargs)
+            super().__init__()
+            if args:
+                data = args[0]
+                if isinstance(data, (dict, _GenericResponse)):
+                    for data_kw in data:
+                        setattr(self, data_kw, data[data_kw])
+                        self.__dict__[data_kw] = data[data_kw]
+            else:
+                for kwarg in kwargs:
+                    setattr(self, kwarg, kwargs[kwarg])
+                    self.__dict__[kwarg] = kwargs[kwarg]
 
 
 class _StandardResponse(DefaultModel):
@@ -117,27 +130,53 @@ class _StandardResponse(DefaultModel):
 class StandardResponse(_StandardResponse):
     """a premade web API friendly response object"""
     def __init__(self, *args, **kwargs):
-        if args:
-            data = args[0]
-            if isinstance(data, (dict, _StandardResponse)):
-                return super().__init__(**dict(data))
+        if SUPPORT_PYDANTIC:
+            if args:
+                data = args[0]
+                if isinstance(data, (dict, _StandardResponse)):
+                    return super().__init__(**dict(data))
+                else:
+                    return super().__init__(*data)
             else:
-                return super().__init__(*data)
+                return super(_StandardResponse, self).__init__(*args, **kwargs)
         else:
-            return super().__init__(*args, **kwargs)
+            super().__init__()
+            if args:
+                data = args[0]
+                if isinstance(data, (dict, _StandardResponse)):
+                    for data_kw in data:
+                        setattr(self, data_kw, data[data_kw])
+                        self.__dict__[data_kw] = data[data_kw]
+            else:
+                for kwarg in kwargs:
+                    setattr(self, kwarg, kwargs[kwarg])
+                    self.__dict__[kwarg] = kwargs[kwarg]
 
 
 class YAMLStandardResponse(_StandardResponse):
     """a premade web API friendly response object"""
     def __init__(self, *args, **kwargs):
-        if args:
-            data = args[0]
-            if isinstance(data, (dict, _StandardResponse)):
-                return super().__init__(**dict(data))
+        if SUPPORT_PYDANTIC:
+            if args:
+                data = args[0]
+                if isinstance(data, (dict, _StandardResponse)):
+                    return super().__init__(**dict(data))
+                else:
+                    return super().__init__(*data)
             else:
-                return super().__init__(*data)
+                return super(_StandardResponse, self).__init__(*args, **kwargs)
         else:
-            return super().__init__(*args, **kwargs)
+            super().__init__()
+            if args:
+                data = args[0]
+                if isinstance(data, (dict, _StandardResponse)):
+                    for data_kw in data:
+                        setattr(self, data_kw, data[data_kw])
+                        self.__dict__[data_kw] = data[data_kw]
+            else:
+                for kwarg in kwargs:
+                    setattr(self, kwarg, kwargs[kwarg])
+                    self.__dict__[kwarg] = kwargs[kwarg]
 
     def __str__(self) -> YAML:
         return yaml_dump(self.dict())
