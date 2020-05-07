@@ -55,6 +55,7 @@ from .utils import (
                 current_datetime,
                 file_and_fileobj,
                 detect_mimetype,
+                dict_to_query,
                 clean_kwargs,
                 current_date,
                 json_load,
@@ -272,7 +273,7 @@ Available pagination methods:
             "data": results,
             "details": {
                 "pagination_method": pagination_method,
-                "query": json_dump(query),
+                "query": dict_to_query(query),
                 "sort": sort,
                 "unique_id": getattr(self, "_UNIQUE_ID", "_id"),
                 "total": total_docs,

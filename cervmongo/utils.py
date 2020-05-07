@@ -40,6 +40,7 @@ from bson.objectid import ObjectId
 import inspect
 import yaml
 import mimetypes
+import urllib
 
 import logging
 
@@ -114,6 +115,9 @@ def get_file_meta_information(fileobj, filename:str=None, content_type:str=None,
         "extension": extension,
         "aliases": [filename.split(".")[0], filename.upper()]
         }
+
+def dict_to_query(dictionary:dict) -> str:
+    return urllib.parse.urlencode(dictionary)
 
 def sort_list(item, field:str):
     try:
