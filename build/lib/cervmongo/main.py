@@ -108,7 +108,7 @@ having some automated conveniences and default argument values.
                                 'logging_cond_delete'):
                 setattr(self, kwarg.upper(), kwargs.pop(kwarg))
 
-        MongoClient.__init__(self, self._MONGO_URI, **kwargs)
+        super(MongoClient, self).__init__(self._MONGO_URI, **kwargs)
 
         db = self.get_default_database()
         if not getattr(db, "name", None):

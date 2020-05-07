@@ -218,14 +218,11 @@ Available pagination methods:
     - limit (results per page, default 20)
     - page
 """
-        if not collection:
-            if hasattr(self, '_DEFAULT_COLLECTION'):
-                collection = self._DEFAULT_COLLECTION
+        collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
-        query = query
-
-        sort = sort.value
+        if isinstance(sort, ENUM):
+            sort = sort.value
 
         total_docs = await self.GET(collection, query=query, count=True, empty=0)
 
