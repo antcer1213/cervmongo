@@ -65,20 +65,15 @@ from cervmongo.config import Config
 
 try:
     from motor.motor_asyncio import AsyncIOMotorClient as MongoClient
+    from motor.motor_asyncio import AsyncIOMotorGridFSBucket as GridFSBucket
     SUPPORT_ASYNCIO_CLIENT = True
+    SUPPORT_ASYNCIO_BUCKET = True
 except:
     logger.warning("motor is not installed. needed if using asyncio")
     class MongoClient: pass
-    SUPPORT_ASYNCIO_CLIENT = False
-
-try:
-    from motor.motor_tornado import MotorGridFSBucket as GridFSBucket
-    SUPPORT_ASYNCIO_BUCKET = True
-except:
-    logger.warning("tornado is not installed. needed if using asyncio GridFS")
     class GridFSBucket: pass
+    SUPPORT_ASYNCIO_CLIENT = False
     SUPPORT_ASYNCIO_BUCKET = False
-
 
 def get_async_client():
     global SUPPORT_ASYNCIO_CLIENT
@@ -202,7 +197,7 @@ having some automated conveniences and default argument values.
                 return s.CLIENT
         return CollectionClient()
 
-    async def PAGINATION_QUERY(self, collection, limit:int=20,
+    async def PAGINATED_QUERY(self, collection, limit:int=20,
                                 sort:PAGINATION_SORT_FIELDS=PAGINATION_SORT_FIELDS["_id"],
                                 after:str=None, before:str=None,
                                 page:int=None, endpoint:str="/",
@@ -330,7 +325,7 @@ Available pagination methods:
             response["details"]["next"] = None
 
         return response
-    PAGINATION_QUERY.clean_kwargs = lambda kwargs: _clean_kwargs(ONLY=("limit", "sort", "after",
+    PAGINATED_QUERY.clean_kwargs = lambda kwargs: _clean_kwargs(ONLY=("limit", "sort", "after",
                                             "before", "page", "endpoint", "query"), kwargs=kwargs)
 
     def GENERATE_ID(self, _id=None):
