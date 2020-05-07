@@ -132,15 +132,15 @@ class SyncIOClient(MongoClient):
             if "$oid" in record:
                 record = json_load(record)
                 one = True
-            elif isinstance(record, DOC_ID.__supertype__):
-                record = record
-                one = True
             else:
                 try:
                     record = DOC_ID(record)
                     one = True
                 except:
                     pass
+        elif isinstance(record, DOC_ID.__supertype__):
+            record = record
+            one = True
         elif isinstance(record, dict):
             keys = record.keys()
             if any(["$oid" in keys, "$regex" in keys]):
@@ -395,7 +395,7 @@ Available pagination methods:
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': True}})
-        records = self.GET(collection, query=query, lst=True)
+        records = self.GET(collection, query=query, distinct=True)
 
         for record in records:
             self.PATCH(collection, record, {"$unset": {field: value}})
@@ -690,11 +690,12 @@ class SyncIODoc(SyncIOClient):
         """removes restricted keys from record and return record"""
         try:
             if record:
-                assert type(record) == dict, "Needs to be a dictionary, got {}".format(type(record))
+                assert isinstance(record, (MongoDictResponse, dict)), "Needs to be a dictionary, got {}".format(type(record))
                 return {key: value for key, value in record.items() if not key in self._RESTRICTED_KEYS}
             else:
                 return {key: value for key, value in self.RECORD.items() if not key in self._RESTRICTED_KEYS}
         except:
+            logger.exception("encountered error when cleaning self.RECORD, returning empty dict")
             return {}
 
     def _p_r(self, record:dict=None):

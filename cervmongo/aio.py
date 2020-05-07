@@ -142,15 +142,15 @@ having some automated conveniences and default argument values.
             if "$oid" in record:
                 record = json_load(record)
                 one = True
-            elif isinstance(record, DOC_ID.__supertype__):
-                record = record
-                one = True
             else:
                 try:
                     record = DOC_ID(record)
                     one = True
                 except:
                     pass
+        elif isinstance(record, DOC_ID.__supertype__):
+            record = record
+            one = True
         elif isinstance(record, dict):
             if "$oid" in record or "$regex" in record:
                 record = json_dump(record)
@@ -428,12 +428,12 @@ Available pagination methods:
             collection = self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': True}})
-        records = await self.GET(collection, query=query, lst=True)
+        records = await self.GET(collection, query=query, distinct=True)
 
         for record in records:
             await self.PATCH(collection, record, {"$unset": {field: value}})
 
-    async def GET(self, collection, record=None, sort:int=1, key:str="_id", lst:bool=None, count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
+    async def GET(self, collection, record=None, sort:int=1, key:str="_id", count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
         db = self.get_default_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection not provided"
@@ -704,14 +704,18 @@ class AsyncIODoc(AsyncIOClient):
 
     def _process_restrictions(self, record:dict=None):
         """removes restricted keys from record and return record"""
-        if record:
-            assert type(record) == dict, "Needs to be a dictionary, got {}".format(type(record))
-            return {key: value for key, value in record.items() if not key in self._RESTRICTED_KEYS}
-        else:
-            return {key: value for key, value in self.RECORD.items() if not key in self._RESTRICTED_KEYS}
+        try:
+            if record:
+                assert isinstance(record, (MongoDictResponse, dict)), "Needs to be a dictionary, got {}".format(type(record))
+                return {key: value for key, value in record.items() if not key in self._RESTRICTED_KEYS}
+            else:
+                return {key: value for key, value in self.RECORD.items() if not key in self._RESTRICTED_KEYS}
+        except:
+            logger.exception("encountered error when cleaning self.RECORD, returning empty dict")
+            return {}
 
     def _p_r(self, record:dict=None):
-        """shortname for _process_restrictions"""
+        """truncated alias for _process_restrictions"""
         return self._process_restrictions(record=record)
 
     def _generate_unique_id(self, template:str="{total}", **kwargs):
@@ -722,9 +726,9 @@ class AsyncIODoc(AsyncIOClient):
             try:
                 value = dateparse(value)
             except:
-                value = datetime.datetime.now()
+                value = current_datetime()
         else:
-            value = datetime.datetime.now()
+            value = current_datetime()
         return value
 
     def _guess_corresponding_fieldname(self, _type="unknown", related_field:str=""):

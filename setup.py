@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="cervmongo",
-    version="0.1.15",
+    version="0.1.16",
     author="Anthony Cervantes",
     author_email="anthony.cervantes@cerver.info",
     description="An (even) higher-level MongoDB client",
