@@ -26,12 +26,12 @@
 __all__ = ["Config"]
 
 import os
-from cervmongo.utils import (
+from .utils import (
                     getenv_boolean,
                     logger,
                     json_dump,
                     )
-from cervmongo.vars import MetaConfig
+from .vars import MetaConfig
 import logging
 ch = logging.StreamHandler()
 

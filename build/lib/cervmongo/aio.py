@@ -35,20 +35,20 @@ import typing
 import copy
 import logging
 
-from cervmongo.models import (
+from .models import (
                 GenericResponse,
                 StandardResponse,
                 MongoListResponse,
                 MongoDictResponse,
                 )
-from cervmongo.vars import (
+from .vars import (
                 StringEnum,
                 IntEnum,
                 PAGINATION_SORT_FIELDS,
                 ENUM,
                 DOC_ID,
                 )
-from cervmongo.utils import (
+from .utils import (
                 get_file_meta_information,
                 parse_string_header,
                 format_string_for_id,
@@ -61,7 +61,7 @@ from cervmongo.utils import (
                 json_dump,
                 logger,
                 )
-from cervmongo.config import Config
+from .config import Config
 
 try:
     from motor.motor_asyncio import AsyncIOMotorClient as MongoClient

@@ -27,7 +27,7 @@ import typing
 from enum import Enum
 from bson.objectid import ObjectId
 from pymongo import MongoClient
-from cervmongo.utils import json_dump
+from .utils import json_dump
 
 # INFO: Objects
 try:

@@ -3,7 +3,7 @@
 
 # cervmongo
 
-A convenience-based approach to MongoDB w/ Python. Packaged due to excessive reuse in private projects, where it was used to facilitate agile, rapid development of multiple web applications. Database is intentionally loaded by default using URI (can be changed after instance is created), with an optional default collection param. Heads up, most commonly used methods of the client are in UPPERCASE, to ensure names are not taken by the parent classes and keep them nice and short.
+A convenience-based approach to MongoDB w/ Python that works as a drop-in replacement to the IO `pymongo` and AIO `motor` respective clients. Packaged due to excessive reuse in private projects, where it was used to facilitate agile, rapid development of multiple web applications. Database is intentionally loaded by default using URI (can be changed after instance is created), with an optional default collection param. Heads up, most commonly used methods of the client are in UPPERCASE, to ensure names are not taken by the parent classes and keep them nice and short.
 
 ## Installation
 

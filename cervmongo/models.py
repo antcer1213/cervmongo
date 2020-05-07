@@ -25,9 +25,9 @@
 #
 import typing
 from functools import partial
-from cervmongo.utils import snake2camel
-from cervmongo.utils import yaml_dump, yaml_load, sort_list
-from cervmongo.vars import (
+from .utils import snake2camel
+from .utils import yaml_dump, yaml_load, sort_list
+from .vars import (
                         DOC_ID,
                         DETAILS,
                         PAGINATION_SORT_FIELDS,

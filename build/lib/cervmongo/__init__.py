@@ -23,27 +23,27 @@
 #  SOFTWARE.
 #
 #
-from cervmongo.main import (
+from .main import (
                 get_client,
                 get_doc,
                 SUPPORT_GRIDFS,
                 )
-from cervmongo.aio import (
+from .aio import (
                 get_async_client,
                 get_async_doc,
                 SUPPORT_ASYNCIO_CLIENT,
                 SUPPORT_ASYNCIO_BUCKET,
                 )
-from cervmongo.models import (
+from .models import (
                 SUPPORT_PYDANTIC,
                 )
-from cervmongo.vars import (
+from .vars import (
                 ASCENDING as ASC,
                 DESCENDING as DESC,
                 )
-from cervmongo.config import Config as config
-from cervmongo import extra
-import cervmongo.extra.convenience as convenience
+from .config import Config as config
+from . import extra
+from .extra import convenience as convenience
 
 quick_load_client = convenience.quick_load_client
 
