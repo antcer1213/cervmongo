@@ -630,6 +630,7 @@ class SyncIODoc(SyncIOClient):
         # INFO: set default collection
         self._DOC_TYPE = doc_type or self._DOC_TYPE
         assert self._DOC_TYPE, "collection must be of type str"
+        self._DEFAULT_COLLECTION = self._DOC_TYPE
         # INFO: location for sample record, used as template
         self._DOC_SAMPLE = doc_sample or self._DOC_SAMPLE
         # INFO: path to validation schema
