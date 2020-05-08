@@ -52,7 +52,7 @@ from .utils import (
                 get_file_meta_information,
                 parse_string_header,
                 format_string_for_id,
-                __silent_drop_kwarg,
+                silent_drop_kwarg,
                 current_datetime,
                 file_and_fileobj,
                 detect_mimetype,
@@ -832,7 +832,7 @@ class SyncIODoc(SyncIOClient):
             self.RECORD.update(kwargs)
         elif self.sample:
             # INFO: removing invalid keys based on sample record
-            [ __silent_drop_kwarg(kwargs, x, reason="not in self.sample") for x in kwargs.keys() if not x in self.sample ]
+            [ silent_drop_kwarg(kwargs, x, reason="not in self.sample") for x in kwargs.keys() if not x in self.sample ]
             self.RECORD.update(kwargs)
         else:
             self.RECORD.update(kwargs)
