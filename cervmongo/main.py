@@ -832,7 +832,7 @@ class SyncIODoc(SyncIOClient):
             self.RECORD.update(kwargs)
         elif self.sample:
             # INFO: removing invalid keys based on sample record
-            [ silent_drop_kwarg(kwargs, x, reason="not in self.sample") for x in kwargs.keys() if not x in self.sample ]
+            [ silent_drop_kwarg(kwargs, x, reason="not in self.sample") for x in list(kwargs.keys()) if not x in self.sample ]
             self.RECORD.update(kwargs)
         else:
             self.RECORD.update(kwargs)
