@@ -52,6 +52,7 @@ from .utils import (
                 get_file_meta_information,
                 parse_string_header,
                 format_string_for_id,
+                __silent_drop_kwarg,
                 current_datetime,
                 file_and_fileobj,
                 detect_mimetype,
@@ -629,88 +630,97 @@ class AsyncIODoc(AsyncIOClient):
         standardized documents and adding json schema validation.
     """
     _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
-    _DEFAULT_COLLECTION:str = None
-    _UNIQUE_ID:str = None
-    _TEMPLATE_PATH:str = None
-    _SCHEMA_PATH:str = None
-    _MARSHMALLOW:str = False
-    _DEFAULT_VALUES:dict = None
-    _RESTRICTED_KEYS:list = None
+    _DOC_TYPE:str = None
+    _DOC_ID:str = None
+    _DOC_SAMPLE:str = None
+    _DOC_SCHEMA:str = None
+    _DOC_MARSHMALLOW:str = False
+    _DOC_DEFAULTS:dict = {}
+    _DOC_RESTRICTED_KEYS:list = []
+    _DOC_ENUMS:list = []
+    _DOC_SETTINGS:str = None
 
-    def __init__(self, _id=None, collection=None, mongo_uri=None, template_path=None, schema_path=None, unique_id=None, **kwargs):
+    def __init__(self, _id=None, doc_type:str=None, doc_sample:typing.Union[typing.Dict, typing.Text]=None, doc_schema:typing.Union[typing.Dict, typing.Text]=None, doc_id:str=None, mongo_uri:str=None, **kwargs):
         self._MONGO_URI = mongo_uri or self._MONGO_URI
         if callable(self._MONGO_URI):
             self._MONGO_URI = self._MONGO_URI()
         # INFO: set default collection
-        self._DEFAULT_COLLECTION = collection or self._DEFAULT_COLLECTION
-        assert self._DEFAULT_COLLECTION, "collection must be of type str"
+        self._DOC_TYPE = doc_type or self._DOC_TYPE
+        assert self._DOC_TYPE, "collection must be of type str"
         # INFO: location for sample record, used as template
-        self._TEMPLATE_PATH = template_path or self._TEMPLATE_PATH
+        self._DOC_SAMPLE = doc_sample or self._DOC_SAMPLE
         # INFO: path to validation schema
-        self._SCHEMA_PATH = schema_path or self._SCHEMA_PATH
-        # INFO: sets the unique id field for the document, if any (cannot be _id)
-        self._UNIQUE_ID = unique_id or self._UNIQUE_ID
-        # INFO: sets an empty list if restricted_keys is None
-        self._RESTRICTED_KEYS = self._RESTRICTED_KEYS or []
-        # INFO: sets an empty dict if restricted_keys is None
-        self._DEFAULT_VALUES = self._DEFAULT_VALUES or {}
+        self._DOC_SCHEMA = doc_schema or self._DOC_SCHEMA
+        # INFO: sets the unique id field for the document type, if any (cannot be _id)
+        self._DOC_ID = doc_id or self._DOC_ID
 
         for kwarg in kwargs.keys():
-            if kwarg.lower() in ('marshmallow', 'default_values', 'restricted_keys'):
+            if kwarg.lower() in ('doc_settings', 'doc_marshmallow', 'doc_defaults', 'doc_restricted_keys'):
                 setattr(self, "_{}".format(kwarg.upper()), kwargs.pop(kwarg))
 
-        # Initial Record object with template else start blank dict
-        if self._TEMPLATE_PATH:
-            if isinstance(self._TEMPLATE_PATH, str):
-                template_full_path = os_path.join(Config.JSON_SAMPLE_PATH, self._TEMPLATE_PATH)
-                with open(template_full_path) as file1:
-                    template = json_load(file1.read())
-            elif isinstance(self._TEMPLATE_PATH, dict):
-                template = self._TEMPLATE_PATH
+        # Initial Record object with sample else start blank dict
+        if self._DOC_SAMPLE:
+            if isinstance(self._DOC_SAMPLE, str):
+                sample_full_path = os_path.join(Config.JSON_SAMPLE_PATH, self._DOC_SAMPLE)
+                with open(sample_full_path) as file1:
+                    sample = json_load(file1.read())
+            elif isinstance(self._DOC_SAMPLE, dict):
+                sample = self._DOC_SAMPLE
             else:
-                raise TypeError("_TEMPLATE_PATH is invalid type '{}', valid types are dict and str".format(type(self._TEMPLATE_PATH)))
-            parent_found = template.pop("__parent__", None)
-            while parent_found:
-                parent_full_path = os_path.join(Config.JSON_SAMPLE_PATH, parent_found)
-                with open(parent_full_path) as file1:
-                    parent = json_load(file1.read())
-                parent.update(template)
-                template = parent
-                parent_found = template.pop("__parent__", None)
-            self.template = template
+                raise TypeError("_DOC_SAMPLE is invalid type '{}', valid types are dict and str".format(type(self._DOC_SAMPLE)))
+            sample_parent_found = sample.pop("__parent__", None)
+            while sample_parent_found:
+                parent_sample_full_path = os_path.join(Config.JSON_SAMPLE_PATH, sample_parent_found)
+                with open(parent_sample_full_path) as _file:
+                    parent_sample = json_load(_file.read())
+                parent_sample.update(sample)
+                sample = parent_sample
+                sample_parent_found = sample.pop("__parent__", None)
+            self.sample = sample
         else:
-            self.template = {}
+            self.sample = {}
 
         # INFO: Load schema else start blank dict to add manual validation entries
-        if self._SCHEMA_PATH:
-            with open(os_path.join(Config.JSON__SCHEMA_PATH, self._SCHEMA_PATH)) as file1:
-                self.schema = json_load(file1.read())
+        if self._DOC_SCHEMA:
+            if isinstance(self._DOC_SCHEMA, str):
+                schema_full_path = os_path.join(Config.JSON_SCHEMA_PATH, self._DOC_SCHEMA)
+                with open(schema_full_path) as _file:
+                    self.schema = json_load(_file.read())
+            elif isinstance(self._DOC_SCHEMA, dict):
+                self.schema = self._DOC_SCHEMA
+            else:
+                raise TypeError("_DOC_SCHEMA is invalid type '{}', valid types are dict and str".format(type(self._DOC_SCHEMA)))
         else:
             self.schema = {}
 
         AsyncIOClient.__init__(self, **kwargs)
 
-        # INFO: If class has a _UNIQUE_ID assigned, create unique index
-        if self._UNIQUE_ID:
-            self.INDEX(self._DEFAULT_COLLECTION, key=self._UNIQUE_ID,
+        # Initialize enums
+        if not self._DOC_ENUMS:
+            pass
+            #enums_record = self.GET(self._DOC_SETTINGS, "enums"
+
+        # INFO: If class has a _DOC_ID assigned, create unique index
+        if self._DOC_ID and self._DOC_ID != "_id":
+            self.INDEX(self._DOC_TYPE, key=self._DOC_ID,
                                                         sort=1, unique=True)
 
         self.load(_id)
 
-    # ~ def __enter__(self):
-        # ~ return self
+    def __enter__(self):
+        return self
 
-    # ~ def __exit__(self):
-        # ~ self.close()
+    def __exit__(self):
+        self.close()
 
     def _process_restrictions(self, record:dict=None):
         """removes restricted keys from record and return record"""
         try:
             if record:
                 assert isinstance(record, (MongoDictResponse, dict)), "Needs to be a dictionary, got {}".format(type(record))
-                return {key: value for key, value in record.items() if not key in self._RESTRICTED_KEYS}
+                return {key: value for key, value in record.items() if not key in self._DOC_RESTRICTED_KEYS}
             else:
-                return {key: value for key, value in self.RECORD.items() if not key in self._RESTRICTED_KEYS}
+                return {key: value for key, value in self.RECORD.items() if not key in self._DOC_RESTRICTED_KEYS}
         except:
             logger.exception("encountered error when cleaning self.RECORD, returning empty dict")
             return {}
@@ -777,12 +787,12 @@ class AsyncIODoc(AsyncIOClient):
     async def load(self, _id=None):
         # If _id specified on init, load actual record versus blank template
         if _id:
-            if self._UNIQUE_ID:
-                self.RECORD = await self.GET(self._DEFAULT_COLLECTION, query={self._UNIQUE_ID: _id}, one=True)
+            if self._DOC_ID:
+                self.RECORD = await self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True)
             else:
-                self.RECORD = await self.GET(self._DEFAULT_COLLECTION, _id)
+                self.RECORD = await self.GET(self._DOC_TYPE, _id)
         else:
-            self.RECORD = copy.deepcopy(self.template)
+            self.RECORD = copy.deepcopy(self.sample)
 
         if not self.RECORD:
             self.RECORD = {}
@@ -791,42 +801,42 @@ class AsyncIODoc(AsyncIOClient):
                     data=self._p_r(self.RECORD),
                     details={
                 "state": "unsaved" if not self.RECORD.get("_id", None) else "saved",
-                "unique_id": self._UNIQUE_ID if self._UNIQUE_ID else "_id"
+                "unique_id": self._DOC_ID if self._DOC_ID else "_id"
                 })
 
     async def view(self, _id=False):
         if not _id:
             return StandardResponse(data=self._p_r(self.RECORD))
         else:
-            if self._UNIQUE_ID:
+            if self._DOC_ID:
                 return StandardResponse(
-                            data=self._p_r(self.GET(self._DEFAULT_COLLECTION, query={self._UNIQUE_ID: _id}, one=True, empty={})),
+                            data=self._p_r(self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True, empty={})),
                             details={
-                        "unique_id": self._UNIQUE_ID if self._UNIQUE_ID else "_id"
+                        "unique_id": self._DOC_ID if self._DOC_ID else "_id"
                         }
                     )
             else:
                 return StandardResponse(
-                            data=self._p_r(self.GET(self._DEFAULT_COLLECTION, query={"_id": _id}, one=True, empty={})),
+                            data=self._p_r(self.GET(self._DOC_TYPE, query={"_id": _id}, one=True, empty={})),
                             details={
-                        "unique_id": self._UNIQUE_ID if self._UNIQUE_ID else "_id"
+                        "unique_id": self._DOC_ID if self._DOC_ID else "_id"
                         }
                     )
 
     async def reload(self):
         assert self.RECORD.get('_id')
-        self.RECORD = await self.GET(self._DEFAULT_COLLECTION, self.RECORD['_id'])
+        self.RECORD = await self.GET(self._DOC_TYPE, self.RECORD['_id'])
 
         return {
             "data": self._p_r(self.RECORD),
             "details": {
-                "unique_id": self._UNIQUE_ID if self._UNIQUE_ID else "_id"
+                "unique_id": self._DOC_ID if self._DOC_ID else "_id"
                 }
             }
 
     def id(self):
-        if self._UNIQUE_ID:
-            return self.RECORD.get(self._UNIQUE_ID, None)
+        if self._DOC_ID:
+            return self.RECORD.get(self._DOC_ID, None)
         else:
             return self.RECORD.get("_id", None)
 
@@ -834,27 +844,31 @@ class AsyncIODoc(AsyncIOClient):
         assert self.RECORD.get('_id') is None, """Cannot use create method on
  an existing record. Use patch method instead."""
 
-        if self._MARSHMALLOW:
-            self._MARSHMALLOW().load(kwargs)
+        if self._DOC_MARSHMALLOW:
+            self._DOC_MARSHMALLOW().load(kwargs)
             self.RECORD.update(kwargs)
-        elif self.template:
-            assert all([ x in self.template for x in kwargs.keys()])
+        elif self.sample:
+            # INFO: removing invalid keys based on sample record
+            [ __silent_drop_kwarg(kwargs, x, reason="not in self.sample") for x in kwargs.keys() if not x in self.sample ]
             self.RECORD.update(kwargs)
         else:
             self.RECORD.update(kwargs)
 
-        kwargs['total'] = str(self.GET(self._DEFAULT_COLLECTION, query=query).count() + 1).zfill(6)
+        kwargs['total'] = str(self.GET(self._DOC_TYPE, query=query).count() + 1).zfill(6)
 
-        if self._UNIQUE_ID and not self.RECORD.get(self._UNIQUE_ID):
-            self.RECORD[self._UNIQUE_ID] = self._generate_unique_id(template=template, **kwargs)
+        if self._DOC_ID and not self.RECORD.get(self._DOC_ID):
+            self.RECORD[self._DOC_ID] = self._generate_unique_id(template=template, **kwargs)
 
         if save:
             await self.save(trigger=None)
 
         return {
             "data": self._p_r(self.RECORD),
-            "details": {"unique_id": self._UNIQUE_ID, "collection": self._DEFAULT_COLLECTION, "_id": self.RECORD[self._UNIQUE_ID]}
+            "details": {"unique_id": self._DOC_ID, "collection": self._DOC_TYPE, "_id": self.RECORD[self._DOC_ID]}
             }
+
+    async def add_enum(name:str, value):
+        self.RECORD
 
     async def push(self, **kwargs):
         assert self.RECORD.get('_id'), """Cannot use push method on
@@ -962,11 +976,11 @@ class AsyncIODoc(AsyncIOClient):
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        if self._MARSHMALLOW:
-            _MARSHMALLOW().load(kwargs, partial=True)
+        if self._DOC_MARSHMALLOW:
+            _DOC_MARSHMALLOW().load(kwargs, partial=True)
             self.RECORD.update(kwargs)
-        elif self.template:
-            assert all([ x in self.template for x in kwargs.keys()])
+        elif self.sample:
+            assert all([ x in self.sample for x in kwargs.keys()])
             self.RECORD.update(kwargs)
         else:
             self.RECORD.update(kwargs)
@@ -975,22 +989,25 @@ class AsyncIODoc(AsyncIOClient):
 
         return {
             "data": self._p_r(self.RECORD),
-            "details": {}
+            "details": {
+                "processed": True,
+                "diff": kwargs
+                }
             }
 
     async def save(self, trigger=None):
         _id = None
 
-        if self._DEFAULT_VALUES:
-            for key, value in self._DEFAULT_VALUES.items():
+        if self._DOC_DEFAULTS:
+            for key, value in self._DOC_DEFAULTS.items():
                 if not self.RECORD.get(key):
                     self.RECORD[key] = value
 
         if self.RECORD.get('_id'):
             _id = self.RECORD.pop("_id")
         try:
-            if self._MARSHMALLOW:
-                self._MARSHMALLOW().load(self.RECORD)
+            if self._DOC_MARSHMALLOW:
+                self._DOC_MARSHMALLOW().load(self.RECORD)
             else:
                 validate(self.RECORD, self.schema)
         except:
@@ -1045,7 +1062,7 @@ class AsyncIODoc(AsyncIOClient):
             else:
                 self.RECORD[field] = {key: value if value else self.GENERATE_ID()}
         else:
-            template_path = os_path.join(_TEMPLATE_PATH, object_name + ".json")
+            template_path = os_path.join(_DOC_SAMPLE, object_name + ".json")
             assert os.path.exists(template_path), "path does not exist"
             with open(template_path) as file1:
                 self.RECORD[field] = json_util.loads(file1.read())
@@ -1056,3 +1073,4 @@ class AsyncIODoc(AsyncIOClient):
             "data": self._p_r(self.RECORD),
             "details": {field: self.RECORD[field], "state": "unsaved"}
             }
+

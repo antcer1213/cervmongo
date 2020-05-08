@@ -282,3 +282,10 @@ def clean_traceback() -> str:
     traceback = _traceback
     # TODO: cleaning logic, to dict, maybe make class?
     return traceback
+
+def __silent_drop_kwarg(kwargs, key, reason=""):
+    if reason:
+        logger.debug(f"dropping key {key} for reason {reason}")
+    else:
+        logger.debug(f"dropping key {key}")
+    return kwargs.pop(key)
