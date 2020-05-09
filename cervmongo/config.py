@@ -31,7 +31,7 @@ from .utils import (
                     logger,
                     json_dump,
                     )
-from .vars import MetaConfig
+from .models import MetaConfig
 import logging
 ch = logging.StreamHandler()
 

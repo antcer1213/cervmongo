@@ -126,7 +126,12 @@ class SyncIOClient(MongoClient):
                 self.FILES = GridFSBucket() # empty object
 
     def __repr__(self):
-        return "<cervmongo.SyncIOClient>"
+        db = self.get_default_database()
+
+        if not getattr(db, "name", None) or db.name == "None":
+            return "<cervmongo.SyncIOClient>"
+        else:
+            return f"<cervmongo.SyncIOClient.{db.name}>"
 
     def _process_record_id_type(self, record):
         one = False
@@ -614,7 +619,7 @@ class SyncIODoc(SyncIOClient):
     """
     _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
     _DOC_TYPE:str = None #: MongoDB collection to use
-    _DOC_ID:str = None #:
+    _DOC_ID:str = "_id" #:
     _DOC_SAMPLE:str = None
     _DOC_SCHEMA:str = None
     _DOC_MARSHMALLOW:str = False
@@ -637,6 +642,7 @@ class SyncIODoc(SyncIOClient):
         self._DOC_SCHEMA = doc_schema or self._DOC_SCHEMA
         # INFO: sets the unique id field for the document, if any (cannot be _id)
         self._DOC_ID = doc_id or self._DOC_ID
+        assert self._DOC_ID, "unique id field name must be of type str"
 
         for kwarg in kwargs.keys():
             if kwarg.lower() in ('doc_marshmallow', 'doc_defaults', 'doc_restricted_keys', "doc_enums"):
@@ -679,17 +685,31 @@ class SyncIODoc(SyncIOClient):
 
         SyncIOClient.__init__(self, **kwargs)
 
+        db = self.get_default_database()
+
+        if not getattr(db, "name", None) or db.name == "None":
+            raise Exception("database not provided in MongoDB URI")
+        else:
+            self._DOC_DB = db.name
+
         # Initialize enums
         if not self._DOC_ENUMS:
             pass
             #enums_record = self.GET(self._DOC_SETTINGS, "enums"
 
         # INFO: If class has a _DOC_ID assigned, create unique index
-        if self._DOC_ID and self._DOC_ID != "_id":
+        if self._DOC_ID != "_id":
             self.INDEX(self._DOC_TYPE, key=self._DOC_ID,
                                                         sort=1, unique=True)
 
         self.load(_id)
+
+    def __repr__(self):
+        if self.RECORD.get("_id", None):
+            _id = self.id()
+            return f"<cervmongo.SyncIODoc.{self._DOC_DB}.{self._DOC_TYPE}.{self._DOC_ID}:{_id}>"
+        else:
+            return "<cervmongo.SyncIODoc>"
 
     def __enter__(self):
         return self
@@ -785,7 +805,7 @@ class SyncIODoc(SyncIOClient):
                     data=self._p_r(self.RECORD),
                     details={
                 "state": "unsaved" if not self.RECORD.get("_id", None) else "saved",
-                "unique_id": self._DOC_ID if self._DOC_ID else "_id"
+                "unique_id": self._DOC_ID
                 })
 
     def view(self, _id=False):
@@ -796,14 +816,14 @@ class SyncIODoc(SyncIOClient):
                 return StandardResponse(
                             data=self._p_r(self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True, empty={})),
                             details={
-                        "unique_id": self._DOC_ID if self._DOC_ID else "_id"
+                        "unique_id": self._DOC_ID
                         }
                     )
             else:
                 return StandardResponse(
                             data=self._p_r(self.GET(self._DOC_TYPE, query={"_id": _id}, one=True, empty={})),
                             details={
-                        "unique_id": self._DOC_ID if self._DOC_ID else "_id"
+                        "unique_id": self._DOC_ID
                         }
                     )
 
@@ -814,15 +834,12 @@ class SyncIODoc(SyncIOClient):
         return {
             "data": self._p_r(self.RECORD),
             "details": {
-                "unique_id": self._DOC_ID if self._DOC_ID else "_id"
+                "unique_id": self._DOC_ID
                 }
             }
 
     def id(self):
-        if self._DOC_ID:
-            return self.RECORD.get(self._DOC_ID, None)
-        else:
-            return self.RECORD.get("_id", None)
+        return self.RECORD.get(self._DOC_ID, None)
 
     def create(self, save=False, trigger=None, template="{total}", query={}, **kwargs):
         assert self.RECORD.get('_id') is None, """Cannot use create method on

@@ -36,7 +36,7 @@ from enum import Enum
 from typing import List, Optional, Sequence, Type, TypeVar, Union
 
 from bson.objectid import ObjectId
-
+from .vars import TYPES, SCHEMA_TYPES
 import inspect
 import yaml
 import mimetypes
@@ -289,3 +289,57 @@ def silent_drop_kwarg(kwargs:dict, key:str, reason:str=""):
     else:
         logger.debug(f"dropping key {key}")
     return kwargs.pop(key)
+
+# TODO: custom jsonschema validator
+
+
+# INFO: tools to use with JSON samples
+def type_from_schema(schema_type:str):
+    """retrieves type function based on JSON sample inferred data schema type"""
+    schema_type = schema_type.lower()
+    return TYPES[schema_type]
+
+
+def schema_from_dict(dictionary:dict, additional:dict={}):
+    """creates a simple JSON schema from JSON sample document"""
+    schema = {"type": "object", "required": [], "properties" : {}}
+
+    for key, value in dictionary.items():
+        if ":" in key:
+            key, _type = key.strip().split(":")
+            _type = SCHEMA_TYPES[_type]
+        else:
+            if isinstance(value, str):
+                _type = "str"
+            elif isinstance(value, float):
+                _type = "float"
+            elif isinstance(value, int):
+                _type = "int"
+            elif isinstance(value, dict):
+                _type = "dict"
+            elif isinstance(value, ObjectId):
+                _type = "oid"
+            elif isinstance(value, datetime.datetime):
+                _type = "datetime"
+            elif isinstance(value, datetime.date):
+                _type = "date"
+            elif isinstance(value, bool):
+                _type = "bool"
+            else:
+                raise TypeError("unrecognized type '{}' for value '{}'".format(type(value), value))
+            _type = SCHEMA_TYPES[_type]
+
+        required = False
+        if key.endswith("*"):
+            key = key.strip("*")
+            required = True
+
+        schema["properties"][key] = {
+                "type": _type
+            }
+
+        if required:
+            if not key in schema["required"]:
+                schema["required"].append(key)
+
+    return schema

@@ -25,9 +25,10 @@
 #
 import typing
 from enum import Enum
+import datetime
 from bson.objectid import ObjectId
 from pymongo import MongoClient
-from .utils import json_dump
+from dateutil.parser import parse as dateparse
 
 # INFO: Objects
 try:
@@ -45,7 +46,8 @@ ASCENDING = 1
 DESCENDING = -1
 
 # INFO: Fields
-DOC_ID = typing.NewType("Document ID", ObjectId)
+OBJECT_ID = OBJ_ID = ObjectId
+DOC_ID = typing.NewType("Document ID", OBJ_ID)
 DETAILS = typing.NewType("Meta Details", dict)
 
 class StringEnum(str, Enum): pass
@@ -54,14 +56,36 @@ class IntEnum(int, Enum): pass
 # NOTE: defaults to recommended fields; overwrite depending on your schema, use utils.generate_enum
 PAGINATION_SORT_FIELDS = Enum(value="Pagination Sort Fields", names=[(item, item) for item in ("_id", "created_datetime", "updated_datetime")])
 
-# INFO: required to desired web response documents
-class MetaConfig(type):
-    def __str__(cls):
-        return json_dump({
-                        attr: value for attr, value in cls
-                    }, pretty=True)
+def str2bool(v):
+    return str(v).lower() in ("yes", "true", "t", "1")
 
-    def __iter__(cls):
-        for attr, value in cls.__dict__.items():
-            if attr.isupper():
-                yield attr, value
+
+def str2datetime(v):
+    if isinstance(v, (datetime.date, datetime,datetime)):
+        return v
+    else:
+        return dateparse(v)
+
+TYPES = {}
+TYPES["str"] = str
+TYPES["float"] = float
+TYPES["int"] = int
+TYPES["abs"] = abs
+TYPES["dict"] = dict
+TYPES["oid"] = ObjectId
+TYPES["bool"] = ObjectId
+TYPES["date"] = TYPES["datetime"] = str2datetime
+TYPES["bool"] = str2bool
+
+SCHEMA_TYPES = {}
+SCHEMA_TYPES["str"] = SCHEMA_TYPES["string"] = SCHEMA_TYPES["text"] = "str"
+SCHEMA_TYPES["number"] = SCHEMA_TYPES["num"] = SCHEMA_TYPES["decimal"] = SCHEMA_TYPES["float"] = "float"
+SCHEMA_TYPES["int"] = SCHEMA_TYPES["integer"] = "int"
+SCHEMA_TYPES["absolute"] = SCHEMA_TYPES["abs"] = "abs"
+SCHEMA_TYPES["object"] = SCHEMA_TYPES["dict"] = SCHEMA_TYPES["obj"] = "dict"
+SCHEMA_TYPES["oid"] = SCHEMA_TYPES["objectid"] = SCHEMA_TYPES["object_id"] = "oid"
+SCHEMA_TYPES["date"] = "date"
+SCHEMA_TYPES["datetime"] = "datetime"
+SCHEMA_TYPES["bool"] = SCHEMA_TYPES["boolean"] = "bool"
+
+

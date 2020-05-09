@@ -26,16 +26,22 @@
 import typing
 from functools import partial
 from .utils import snake2camel
-from .utils import yaml_dump, yaml_load, sort_list
+from .utils import (
+                    json_dump,
+                    json_load,
+                    yaml_dump,
+                    yaml_load,
+                    sort_list,
+                    )
 from .vars import (
-                        DOC_ID,
-                        DETAILS,
-                        PAGINATION_SORT_FIELDS,
-                        YAML,
-                        JSON,
-                        ASCENDING,
-                        DESCENDING,
-                        )
+                    DOC_ID,
+                    DETAILS,
+                    PAGINATION_SORT_FIELDS,
+                    YAML,
+                    JSON,
+                    ASCENDING,
+                    DESCENDING,
+                    )
 from pymongo.cursor import Cursor
 try:
     from pydantic import BaseConfig, BaseModel
@@ -74,7 +80,23 @@ except:
             alias_generator = partial(snake2camel, start_lower=True)
 
 
+# INFO: required to desired web response documents
+class MetaConfig(type):
+    def __str__(cls):
+        return json_dump({
+                        attr: value for attr, value in cls
+                    }, pretty=True)
+
+    def __iter__(cls):
+        for attr, value in cls.__dict__.items():
+            if attr.isupper():
+                yield attr, value
+
+
 class _GenericResponse(DefaultModel):
+    def __repr__(self):
+        return "GenericResponse"
+
     class Config:
         schema_extra = {
             'example': [
@@ -115,6 +137,9 @@ class GenericResponse(_GenericResponse):
 class _StandardResponse(DefaultModel):
     data: typing.Union[typing.Dict, typing.List, typing.Text, int, float, bool]
     details: DETAILS = DETAILS(...)
+
+    def __repr__(self):
+        return "StandardResponse"
 
     class Config:
         schema_extra = {
