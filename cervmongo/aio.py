@@ -228,7 +228,7 @@ Available pagination methods:
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
-        if isinstance(sort, ENUM.__constraints__):
+        if isinstance(sort, ENUM.__supertype__):
             sort = sort.value
 
         total_docs = await self.GET(collection, query=query, count=True, empty=0)

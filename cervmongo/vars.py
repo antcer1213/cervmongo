@@ -33,13 +33,13 @@ from dateutil.parser import parse as dateparse
 # INFO: Objects
 try:
     from pydantic import BaseConfig, BaseModel
-    MODEL = typing.TypeVar("DataModel", bound=BaseModel)
+    MODEL = typing.NewType("DataModel", BaseModel)
 except:
     from dataclasses import dataclass
-    MODEL = typing.TypeVar("DataModel", bound=dataclass)
-YAML = typing.TypeVar("YAML Document", bound=str)
-JSON = typing.TypeVar("JSON Document", bound=str)
-ENUM = typing.TypeVar("Enum", bound=Enum)
+    MODEL = typing.NewType("DataModel", dataclass)
+YAML = typing.NewType("YAML Document", str)
+JSON = typing.NewType("JSON Document", str)
+ENUM = typing.NewType("Enum", Enum)
 
 # INFO: Static
 ASCENDING = 1
