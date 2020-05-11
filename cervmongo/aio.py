@@ -471,7 +471,7 @@ Available pagination methods:
                     if query:
                         results.append(await collection.count_documents(query, **kwargs))
                     else:
-                        results.append(collection.estimated_document_count(**kwargs))
+                        results.append(await collection.estimated_document_count(**kwargs))
                 elif distinct:
                     cursor = await collection.distinct(distinct, filter=query, **kwargs)
                     results.append(sorted(cursor))
