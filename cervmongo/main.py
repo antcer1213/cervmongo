@@ -136,13 +136,12 @@ class SyncIOClient(MongoClient):
     def _process_record_id_type(self, record):
         one = False
         if isinstance(record, str):
+            one = True
             if "$oid" in record:
                 record = json_load(record)
-                one = True
             else:
                 try:
                     record = DOC_ID.__supertype__(record)
-                    one = True
                 except:
                     pass
         elif isinstance(record, DOC_ID.__supertype__):
@@ -229,16 +228,14 @@ Available pagination methods:
                 pagination_method = "cursor"
             else:
                 pagination_method = "time"
-            cursor = self.GET(collection, query=query,
+            results = self.GET(collection, query=query,
                                     limit=limit, key=sort, before=before,
-                                    after=after, empty=[])
+                                    after=after, empty=[]).list()
         else:
             pagination_method = "offset"
-            cursor = self.GET(collection, query=query,
+            results = self.GET(collection, query=query,
                                     perpage=limit, sort=sort, page=page,
-                                    empty=[])
-
-        results = [ record for record in cursor ]
+                                    empty=[]).list()
 
         # INFO: determine 'cursor' template
         if sort == "_id":
@@ -469,9 +466,10 @@ Available pagination methods:
                     cursor = collection.find(query, fields, **kwargs)
                     results.append(MongoListResponse(cursor.sort([(key, sort)]).skip(total).limit(perpage)))
                 elif limit:
-                    query = {"$and": [
-                                query
-                            ]}
+                    if any((query, after, before)):
+                        query = {"$and": [
+                                    query
+                                ]}
                     if after or before:
                         if after:
                             sort_value, _id_value = after.split("_")

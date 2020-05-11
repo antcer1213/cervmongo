@@ -72,8 +72,8 @@ class Config(metaclass=MetaConfig):
                 setattr(cls, attr, value)
 
     @classmethod
-    def change_debug_level(cls, debug_level:int):
-        """Changes debug level of application, default is logging.warning"""
+    def set_debug_level(cls, debug_level:int):
+        """Sets debug level of application, default is logging.warning"""
         assert isinstance(debug_level, int), "debug level must be a valid logging int"
         cls.DEBUG_LEVEL = debug_level
         logger.setLevel(debug_level)

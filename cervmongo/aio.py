@@ -146,13 +146,12 @@ having some automated conveniences and default argument values.
     def _process_record_id_type(self, record):
         one = False
         if isinstance(record, str):
+            one = True
             if "$oid" in record:
                 record = json_load(record)
-                one = True
             else:
                 try:
                     record = DOC_ID.__supertype__(record)
-                    one = True
                 except:
                     pass
         elif isinstance(record, DOC_ID.__supertype__):
@@ -480,9 +479,10 @@ Available pagination methods:
                     cursor = collection.find(query, fields, **kwargs)
                     results.append(cursor.sort([(key, sort)]).skip(total).limit(perpage))
                 elif limit:
-                    query = {"$and": [
-                                query
-                            ]}
+                    if any((query, after, before)):
+                        query = {"$and": [
+                                    query
+                                ]}
                     if after or before:
                         if after:
                             sort_value, _id_value = after.split("_")
