@@ -151,7 +151,7 @@ having some automated conveniences and default argument values.
                 one = True
             else:
                 try:
-                    record = DOC_ID(record)
+                    record = DOC_ID.__supertype__(record)
                     one = True
                 except:
                     pass
@@ -334,9 +334,9 @@ Available pagination methods:
 
     def GENERATE_ID(self, _id=None):
         if _id:
-            return DOC_ID(_id)
+            return DOC_ID.__supertype__(_id)
         else:
-            return DOC_ID()
+            return DOC_ID.__supertype__()
 
     async def UPLOAD(self, fileobj, filename:str=None, content_type:str=None, extension:str=None, **kwargs):
         fileobj = file_and_fileobj(fileobj)
@@ -486,7 +486,7 @@ Available pagination methods:
                     if after or before:
                         if after:
                             sort_value, _id_value = after.split("_")
-                            _id_value = DOC_ID(_id_value)
+                            _id_value = DOC_ID.__supertype__(_id_value)
                             query["$and"].append({"$or": [
                                             {key: {"$lt": _id_value}}
                                         ]})
@@ -495,7 +495,7 @@ Available pagination methods:
                                 query["$and"][-1]["$or"].append({key: {"$lt": sort_value}, "_id": {"$lt": _id_value}})
                         elif before:
                             sort_value, _id_value = before.split("_")
-                            _id_value = DOC_ID(_id_value)
+                            _id_value = DOC_ID.__supertype__(_id_value)
                             query["$and"].append({"$or": [
                                             {key: {"$gt": _id_value}}
                                         ]})
