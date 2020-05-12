@@ -68,26 +68,14 @@ from .config import Config
 try:
     from motor.motor_asyncio import AsyncIOMotorClient as MongoClient
     from motor.motor_asyncio import AsyncIOMotorGridFSBucket as GridFSBucket
-    SUPPORT_ASYNCIO_CLIENT = True
-    SUPPORT_ASYNCIO_BUCKET = True
+    SUPPORT_ASYNCIO_CLIENT = True #: True if motor package is installed else False
+    SUPPORT_ASYNCIO_BUCKET = True #: True if motor package is installed else False
 except:
     logger.warning("motor is not installed. needed if using asyncio")
     class MongoClient: pass
     class GridFSBucket: pass
-    SUPPORT_ASYNCIO_CLIENT = False
-    SUPPORT_ASYNCIO_BUCKET = False
-
-def get_async_client():
-    global SUPPORT_ASYNCIO_CLIENT
-    if not SUPPORT_ASYNCIO_CLIENT:
-        raise Exception("motor not installed")
-    return AsyncIOClient
-
-def get_async_doc():
-    global SUPPORT_ASYNCIO_CLIENT
-    if not SUPPORT_ASYNCIO_CLIENT:
-        raise Exception("motor not installed")
-    return AsyncIODoc
+    SUPPORT_ASYNCIO_CLIENT = False #: True if motor package is installed else False
+    SUPPORT_ASYNCIO_BUCKET = False #: True if motor package is installed else False
 
 
 class AsyncIOClient(MongoClient):
@@ -207,7 +195,7 @@ having some automated conveniences and default argument values.
                                 sort:PAGINATION_SORT_FIELDS=PAGINATION_SORT_FIELDS["_id"],
                                 after:str=None, before:str=None,
                                 page:int=None, endpoint:str="/",
-                                query:dict={}, **kwargs):
+                                ordering:int=-1, query:dict={}, **kwargs):
         """Returns paginated results of collection w/ query.
 
 Available pagination methods:
@@ -239,12 +227,13 @@ Available pagination methods:
                 pagination_method = "time"
             cursor = await self.GET(collection, query=query,
                                     limit=limit, key=sort, before=before,
-                                    after=after, empty=[])
+                                    after=after, sort=ordering, empty=[])
         else:
+            assert page >= 1, "page must be equal to or greater than 1"
             pagination_method = "offset"
             cursor = await self.GET(collection, query=query,
-                                    perpage=limit, sort=sort, page=page,
-                                    empty=[])
+                                    perpage=limit, key=sort, page=page,
+                                    sort=ordering, empty=[])
 
         results = [ record async for record in cursor ]
 
@@ -273,6 +262,18 @@ Available pagination methods:
                 date = None
             if any((after, before)):
                 new_before = template.format(_id=_id, date=date)
+
+            if pagination_method in ("cursor", "time"):
+                if before:
+                    check_ahead = await self.GET(collection, query=query,
+                                            limit=limit, key=sort, before=new_before, empty=0, count=True)
+                    if not check_ahead:
+                        new_before = None
+                elif after:
+                    check_ahead = await self.GET(collection, query=query,
+                                            limit=limit, key=sort, after=new_after, empty=0, count=True)
+                    if not check_ahead:
+                        new_after = None
 
         response = {
             "data": results,
@@ -466,7 +467,7 @@ Available pagination methods:
             collection = db[collection]
 
             if any([query, not record and not search]):
-                if count:
+                if count and not limit:
                     if query:
                         results.append(await collection.count_documents(query, **kwargs))
                     else:
@@ -503,8 +504,15 @@ Available pagination methods:
                                 sort_value = dateparse(sort_value)
                                 query["$and"][-1]["$or"].append({key: {"$gt": sort_value}, "_id": {"$gt": _id_value}})
 
-                    cursor = collection.find(query, fields, **kwargs).sort([(key, -1)]).limit(limit)
-                    results.append(cursor)
+                    if count:
+                        try:
+                            cursor = await collection.count_documents(query, limit=limit, hint=[(key, sort)], **kwargs)
+                        except:
+                            cursor = len(await collection.find(query, fields, **kwargs).sort([(key, sort)]).to_list(limit))
+                        results.append(cursor)
+                    else:
+                        cursor = collection.find(query, fields, **kwargs).sort([(key, sort)]).limit(limit)
+                        results.append(cursor)
                 elif one:
                     val = await collection.find_one(query, fields, **kwargs)
                     results.append(val if val else empty)
@@ -1092,3 +1100,17 @@ class AsyncIODoc(AsyncIOClient):
             "details": {field: self.RECORD[field], "state": "unsaved"}
             }
 
+
+def get_async_client() -> AsyncIOClient:
+    """returns AsyncIOClient class"""
+    global SUPPORT_ASYNCIO_CLIENT
+    if not SUPPORT_ASYNCIO_CLIENT:
+        raise Exception("motor not installed")
+    return AsyncIOClient
+
+def get_async_doc() -> AsyncIODoc:
+    """returns AsyncIODoc class"""
+    global SUPPORT_ASYNCIO_CLIENT
+    if not SUPPORT_ASYNCIO_CLIENT:
+        raise Exception("motor not installed")
+    return AsyncIODoc

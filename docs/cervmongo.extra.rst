@@ -1,38 +1,38 @@
-cervmongo.extra package
-=======================
+cervmongo.extra subpackage
+==========================
 
-Submodules
-----------
+subpackage contents
+-------------------
 
-cervmongo.extra.convenience module
-----------------------------------
+.. automodule:: cervmongo.extra
+   :members:
+   :inherited-members:
+   :imported-members:
+   :undoc-members:
+   :show-inheritance:
+
+
+cervmongo.extra.convenience submodule
+-------------------------------------
 
 .. automodule:: cervmongo.extra.convenience
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.extra.datatables module
----------------------------------
+cervmongo.extra.datatables submodule
+------------------------------------
 
 .. automodule:: cervmongo.extra.datatables
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.extra.examples module
--------------------------------
+cervmongo.extra.examples submodule
+----------------------------------
 
 .. automodule:: cervmongo.extra.examples
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: cervmongo.extra
-   :members:
-   :undoc-members:
-   :show-inheritance:

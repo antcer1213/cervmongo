@@ -299,8 +299,17 @@ class MongoListResponse(list):
     def count(self) -> int:
         """returns the count of the number of records in cursor or list results"""
         if self._cursor:
-            self._cursor.rewind()
-            return self._cursor.count()
+            try:
+                self._cursor.rewind()
+                return self._cursor.count(with_limit_and_skip=True)
+            except:
+                col = self._cursor._Cursor__collection
+                query = self._cursor._Cursor__spec or {}
+                limit = self._cursor._Cursor__limit
+                sort = self._cursor._Cursor__ordering
+                if sort:
+                    sort = sort.items()
+                return col.count_documents(query, limit=limit, hint=sort)
         else:
             return len(self)
 

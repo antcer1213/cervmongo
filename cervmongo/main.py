@@ -67,18 +67,11 @@ from .config import Config
 
 try:
     from gridfs import GridFSBucket
-    SUPPORT_GRIDFS = True
+    SUPPORT_GRIDFS = True #: True if gridfs functionality is available else False
 except:
     logger.warning("gridfs is not installed")
-    SUPPORT_GRIDFS = False
+    SUPPORT_GRIDFS = False #: True if gridfs functionality is available else False
     class GridFSBucket: pass
-
-
-def get_client():
-    return SyncIOClient
-
-def get_doc():
-    return SyncIODoc
 
 
 class SyncIOClient(MongoClient):
@@ -198,7 +191,7 @@ class SyncIOClient(MongoClient):
                                 sort:PAGINATION_SORT_FIELDS=PAGINATION_SORT_FIELDS["_id"],
                                 after:str=None, before:str=None,
                                 page:int=None, endpoint:str="/",
-                                query:dict={}, **kwargs):
+                                ordering:int=-1, query:dict={}, **kwargs):
         """Returns paginated results of collection w/ query.
 
 Available pagination methods:
@@ -230,12 +223,14 @@ Available pagination methods:
                 pagination_method = "time"
             results = self.GET(collection, query=query,
                                     limit=limit, key=sort, before=before,
-                                    after=after, empty=[]).list()
+                                    after=after, sort=ordering, empty=[]).list()
+
         else:
+            assert page >= 1, "page must be equal to or greater than 1"
             pagination_method = "offset"
             results = self.GET(collection, query=query,
-                                    perpage=limit, sort=sort, page=page,
-                                    empty=[]).list()
+                                    perpage=limit, key=sort, page=page,
+                                    sort=ordering, empty=[]).list()
 
         # INFO: determine 'cursor' template
         if sort == "_id":
@@ -262,6 +257,20 @@ Available pagination methods:
                 date = None
             if any((after, before)):
                 new_before = template.format(_id=_id, date=date)
+
+            if pagination_method in ("cursor", "time"):
+                if before:
+                    check_ahead = self.GET(collection, query=query,
+                                            limit=limit, key=sort, before=new_before, count=True, empty=0)
+                    if not check_ahead:
+                        new_before = None
+                elif after:
+                    check_ahead = self.GET(collection, query=query,
+                                            limit=limit, key=sort, after=new_after, count=True, empty=0)
+                    if not check_ahead:
+                        new_after = None
+
+
 
         response = {
             "data": results,
@@ -453,7 +462,7 @@ Available pagination methods:
             collection = db[collection]
 
             if any([query, not record and not search]):
-                if count:
+                if count and not limit:
                     if query:
                         results.append(collection.count_documents(query, **kwargs))
                     else:
@@ -490,8 +499,15 @@ Available pagination methods:
                                 sort_value = dateparse(sort_value)
                                 query["$and"][-1]["$or"].append({key: {"$gt": sort_value}, "_id": {"$gt": _id_value}})
 
-                    cursor = collection.find(query, fields, **kwargs).sort([(key, -1)]).limit(limit)
-                    results.append(MongoListResponse(cursor))
+                    if count:
+                        try:
+                            cursor = collection.find(query, fields, **kwargs).sort([(key, sort)]).limit(limit).count(with_limit_and_skip=True)
+                        except:
+                            cursor = collection.count_documents(query, limit=limit, hint=[(key, sort)], **kwargs)
+                        results.append(cursor)
+                    else:
+                        cursor = collection.find(query, fields, **kwargs).sort([(key, sort)]).limit(limit)
+                        results.append(MongoListResponse(cursor))
                 elif one:
                     val = collection.find_one(query, fields, **kwargs)
                     results.append(MongoDictResponse(val) if val else empty)
@@ -1069,3 +1085,12 @@ class SyncIODoc(SyncIOClient):
             "data": self._p_r(self.RECORD),
             "details": {field: self.RECORD[field], "state": "unsaved"}
             }
+
+
+def get_client() -> SyncIOClient:
+    """returns SyncIOClient class"""
+    return SyncIOClient
+
+def get_doc() -> SyncIODoc:
+    """returns SyncIODoc class"""
+    return SyncIODoc

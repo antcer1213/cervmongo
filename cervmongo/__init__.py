@@ -23,29 +23,44 @@
 #  SOFTWARE.
 #
 #
-from .main import (
-                get_client,
-                get_doc,
-                SUPPORT_GRIDFS,
-                )
-from .aio import (
-                get_async_client,
-                get_async_doc,
-                SUPPORT_ASYNCIO_CLIENT,
-                SUPPORT_ASYNCIO_BUCKET,
-                )
-from .models import (
-                SUPPORT_PYDANTIC,
-                )
-from .vars import (
-                ASCENDING as ASC,
-                DESCENDING as DESC,
-                )
-from .config import Config as config
-from . import extra
+__all__ = [
+        "get_client", "get_doc", "SUPPORT_GRIDFS",
+        "get_async_client", "get_async_doc", "SUPPORT_ASYNCIO_CLIENT", "SUPPORT_ASYNCIO_BUCKET",
+        "SUPPORT_PYDANTIC",
+        "ASC", "DESC",
+        "quick_load_client",
+        "get_config",
+        ]
+
+from . import (
+            main,
+            aio,
+            models,
+            vars,
+            config,
+            extra,
+            )
 from .extra import convenience as convenience
+
+
+get_client = main.get_client
+get_doc = main.get_doc
+SUPPORT_GRIDFS = main.SUPPORT_GRIDFS
+
+get_async_client = aio.get_async_client
+get_async_doc = aio.get_async_doc
+SUPPORT_ASYNCIO_CLIENT = aio.SUPPORT_ASYNCIO_CLIENT
+SUPPORT_ASYNCIO_BUCKET = aio.SUPPORT_ASYNCIO_BUCKET
+
+SUPPORT_PYDANTIC = models.SUPPORT_PYDANTIC
+
+ASC = vars.ASCENDING
+DESC = vars.DESCENDING
+
+config = config.Config
 
 quick_load_client = convenience.quick_load_client
 
-def get_config():
+def get_config() -> config:
+    """returns the Config class to set MongoDB configuration"""
     return config

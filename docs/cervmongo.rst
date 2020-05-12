@@ -1,52 +1,59 @@
 cervmongo package
 =================
 
+package contents
+---------------
 
-Submodules
-----------
+.. automodule:: cervmongo
+   :members:
+   :inherited-members:
+   :imported-members:
+   :undoc-members:
+   :show-inheritance:
 
-cervmongo.config module
------------------------
+
+cervmongo.config submodule
+--------------------------
 
 .. automodule:: cervmongo.config
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.main module
----------------------
+cervmongo.main submodule
+------------------------
 
 .. automodule:: cervmongo.main
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.aio module
---------------------
+cervmongo.aio submodule
+-----------------------
 
 .. automodule:: cervmongo.aio
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.models module
------------------------
+cervmongo.models submodule
+--------------------------
 
 .. automodule:: cervmongo.models
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.utils module
------------------------
+cervmongo.utils submodule
+-------------------------
 
 .. automodule:: cervmongo.utils
    :members:
    :undoc-members:
    :show-inheritance:
 
-cervmongo.vars module
----------------------
+cervmongo.vars submodule
+------------------------
 
 .. automodule:: cervmongo.vars
    :members:
@@ -61,12 +68,3 @@ Subpackages
    :maxdepth: 4
 
    cervmongo.extra
-
-
-Module contents
----------------
-
-.. automodule:: cervmongo
-   :members:
-   :undoc-members:
-   :show-inheritance:
