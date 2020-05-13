@@ -23,17 +23,23 @@
 #  SOFTWARE.
 #
 #
-import cervmongo
+from ..config import Config
+from ..aio import (
+                get_async_client,
+                )
+from ..main import (
+                get_client,
+                )
 
 
 def quick_load_client(database:str="test_db", collection:str="test_col", replica_set:str=None, async:bool=False):
     """Returns Collection client object"""
-    cervmongo.get_config().set_mongo_db(database).set_mongo_replica_set(replica_set)
+    Config.set_mongo_db(database).set_mongo_replica_set(replica_set)
 
     if async:
-        client = cervmongo.get_async_client()
+        client = get_async_client()
     else:
-        client = cervmongo.get_client()
+        client = get_client()
 
     return client().COLLECTION(collection)
 

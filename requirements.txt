@@ -1,0 +1,6 @@
+pymongo
+python-dateutil
+jsonschema
+dataclasses
+uuid
+PyYAML

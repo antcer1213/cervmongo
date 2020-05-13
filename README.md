@@ -15,7 +15,7 @@ pip install cervmongo
 
 ## Documentation
 
-Full documentation available [here](http://cerver.info/packages/cervmongo/).
+Full documentation available [here](https://cerver.info/packages/cervmongo/).
 
 ## Usage
 
@@ -98,7 +98,7 @@ multi_col_results = client.GET(["test_col1", "test_col2"], {
  - python 3.6+
  - python packages:
     - `pymongo`
-    - `dateutil`
+    - `python-dateutil`
     - `jsonschema`
     - `dataclasses`
 
