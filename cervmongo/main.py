@@ -1124,11 +1124,11 @@ class SyncIODoc(SyncIOClient):
 
         if self._DOC_DEFAULTS:
             for key, value in self._DOC_DEFAULTS.items():
-                if not self.RECORD.get(key):
+                if not self.RECORD.get(key, None):
                     self.RECORD[key] = value
 
-        if self.RECORD.get('_id'):
-            _id = self.RECORD.pop("_id")
+        if self.RECORD.get('_id', None):
+            _id = self.RECORD.pop("_id", None)
         try:
             if self._DOC_MARSHMALLOW:
                 self._DOC_MARSHMALLOW().load(self.RECORD)
@@ -1138,10 +1138,10 @@ class SyncIODoc(SyncIOClient):
             raise
         else:
             if _id:
-                self.PATCH(None, _id, {"$set": self.RECORD})
                 self.RECORD['_id'] = _id
+                self.PUT(None, self.RECORD)
             else:
-                result = self.PUT(None, self.RECORD)
+                result = self.POST(None, self.RECORD)
                 self.RECORD['_id'] = result.inserted_id
             if trigger:
                 trigger()

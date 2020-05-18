@@ -1039,11 +1039,11 @@ class AsyncIODoc(AsyncIOClient):
 
         if self._DOC_DEFAULTS:
             for key, value in self._DOC_DEFAULTS.items():
-                if not self.RECORD.get(key):
+                if not self.RECORD.get(key, None):
                     self.RECORD[key] = value
 
-        if self.RECORD.get('_id'):
-            _id = self.RECORD.pop("_id")
+        if self.RECORD.get('_id', None):
+            _id = self.RECORD.pop("_id", None)
         try:
             if self._DOC_MARSHMALLOW:
                 self._DOC_MARSHMALLOW().load(self.RECORD)
@@ -1053,10 +1053,10 @@ class AsyncIODoc(AsyncIOClient):
             raise
         else:
             if _id:
-                await self.PATCH(None, _id, {"$set": self.RECORD})
                 self.RECORD['_id'] = _id
+                await self.PUT(None, self.RECORD)
             else:
-                result = await self.PUT(None, self.RECORD)
+                result = await self.POST(None, self.RECORD)
                 self.RECORD['_id'] = result.inserted_id
             if trigger:
                 trigger()
