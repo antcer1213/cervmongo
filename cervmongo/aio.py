@@ -73,7 +73,7 @@ try:
 except:
     logger.warning("motor is not installed. needed if using asyncio")
     class MongoClient: pass
-    class GridFSBucket: pass
+    class GridFSBucket: pass # NOTE: in case of refereneces
     SUPPORT_ASYNCIO_CLIENT = False #: True if motor package is installed else False
     SUPPORT_ASYNCIO_BUCKET = False #: True if motor package is installed else False
 
@@ -81,7 +81,7 @@ except:
 class AsyncIOClient(MongoClient):
     """
 High-level AsyncIOMotorClient subclass with additional methods added for ease-of-use,
-having some automated conveniences and default argument values.
+having some automated conveniences and defaults.
     """
     _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
     _DEFAULT_COLLECTION = None
@@ -121,7 +121,7 @@ having some automated conveniences and default argument values.
                 self.FILES = GridFSBucket(db)
             else:
                 logger.warning("gridfsbucket not instantiated due to missing 'tornado' package")
-                self.FILES = GridFSBucket() # Using empty object
+                self.FILES = None
 
     def __repr__(self):
         db = self.get_default_database()
@@ -160,7 +160,10 @@ having some automated conveniences and default argument values.
             AsyncIOClient.__init__(self, mongo_uri=Config.MONGO_URI, default_collection=self._DEFAULT_COLLECTION)
 
     def COLLECTION(self, collection:str):
+
         self._DEFAULT_COLLECTION = collection
+
+
         class CollectionClient:
             __parent__ = CLIENT = self
             # INFO: variables
@@ -196,22 +199,23 @@ having some automated conveniences and default argument values.
                                 after:str=None, before:str=None,
                                 page:int=None, endpoint:str="/",
                                 ordering:int=-1, query:dict={}, **kwargs):
-        """Returns paginated results of collection w/ query.
+        """
+            Returns paginated results of collection w/ query.
 
-Available pagination methods:
- - __Cursor-based (default)__
-    - after
-    - before
-    - limit (results per page, default 20)
- - __Time-based__ (a datetime field must be selected)
-    - sort (set to datetime field)
-    - after (records after this time)
-    - before (records before this time)
-    - limit (results per page, default 20)
- - __Offset-based__ (not recommended)
-    - limit (results per page, default 20)
-    - page
-"""
+            Available pagination methods:
+             - **Cursor-based (default)**
+                - after
+                - before
+                - limit (results per page, default 20)
+             - **Time-based** (a datetime field must be selected)
+                - sort (set to datetime field)
+                - after (records after this time)
+                - before (records before this time)
+                - limit (results per page, default 20)
+             - **Offset-based** (not recommended)
+                - limit (results per page, default 20)
+                - page
+        """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
@@ -339,6 +343,7 @@ Available pagination methods:
             return DOC_ID.__supertype__()
 
     async def UPLOAD(self, fileobj, filename:str=None, content_type:str=None, extension:str=None, **kwargs):
+        assert self.FILES, "GridFS instance not initialized, run method 'set_database' with the desired database and try again"
         fileobj = file_and_fileobj(fileobj)
         metadata = get_file_meta_information(fileobj, filename=filename, content_type=content_type, extension=extension)
         filename = metadata['filename']
@@ -347,11 +352,13 @@ Available pagination methods:
         return file_id
 
     async def ERASE(self, filename_or_id, revision:int=-1):
+        assert self.FILES, "GridFS instance not initialized, run method 'set_database' with the desired database and try again"
         fs_doc = await self.DOWNLOAD(filename_or_id, revision=revision)
         await self.FILES.delete(fs_doc._id)
         await fs_doc.close()
 
     async def DOWNLOAD(self, filename_or_id=None, revision:int=-1, skip:int=None, limit:int=None, sort:int=-1, **query):
+        assert self.FILES, "GridFS instance not initialized, run method 'set_database' with the desired database and try again"
         revision = int(revision)
         if filename_or_id:
             if isinstance(filename_or_id, DOC_ID.__supertype__):
@@ -408,7 +415,7 @@ Available pagination methods:
             #print((_traceback()))
             pass
 
-    async def ADD_FIELD(self, collection, field:str, value='', data=False, query:dict={}):
+    async def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]='', data=False, query:dict={}):
         if not collection:
             if hasattr(self, '_DEFAULT_COLLECTION'):
                 collection = self._DEFAULT_COLLECTION
@@ -430,7 +437,7 @@ Available pagination methods:
                 await self.PATCH(collection, record['_id'], {"$set": {
                     field: value}})
 
-    async def REMOVE_FIELD(self, collection, field:str, value='', query:dict={}):
+    async def REMOVE_FIELD(self, collection, field:str, query:dict={}) -> None:
         if not collection:
             collection = self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
@@ -438,9 +445,9 @@ Available pagination methods:
         records = await self.GET(collection, query=query, distinct=True)
 
         for record in records:
-            await self.PATCH(collection, record, {"$unset": {field: value}})
+            await self.PATCH(collection, record, {"$unset": {field: ""}})
 
-    async def GET(self, collection, record=None, sort:int=1, key:str="_id", count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
+    async def GET(self, collection, id_or_query:typing.Union[DOC_ID, str, typing.Dict]={}, sort:int=1, key:str="_id", count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
         db = self.get_default_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection not provided"
@@ -450,23 +457,21 @@ Available pagination methods:
         cols = list(set(collection))
         results = []
         number_of_results = len(cols)
-        query = kwargs.pop("query", {})
 
         if distinct == True:
             distinct = "_id"
 
-        if record:
-            record, _one = self._process_record_id_type(record)
-            one = _one if _one else one
-            if one:
-                query.update({"_id": record})
-            else:
-                query.update(record)
+        id_or_query, _one = self._process_record_id_type(id_or_query)
+        one = _one if _one else one
+        if _one:
+            query = {"_id": id_or_query}
+        else:
+            query = id_or_query
 
         for collection in cols:
             collection = db[collection]
 
-            if any([query, not record and not search]):
+            if query or not search:
                 if count and not limit:
                     if query:
                         results.append(await collection.count_documents(query, **kwargs))
@@ -560,23 +565,31 @@ Available pagination methods:
 
         return await self.GET(collection, search=search, **kwargs)
 
-    async def PUT(self, collection, record, many=False):
+    async def POST(self, collection, record_or_records:typing.Union[typing.List, typing.Dict]):
         db = self.get_default_database()
-        if not collection:
-            if hasattr(self, '_DEFAULT_COLLECTION'):
-                collection = self._DEFAULT_COLLECTION
+        collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
-
         collection = db[collection]
 
-        if many:
-            return await collection.insert_many(record)
+        if isinstance(record_or_records, (list, tuple)):
+            return await collection.insert_many(record_or_records)
+        elif isinstance(record_or_records, dict):
+            return await collection.insert_one(record_or_records)
         else:
-            if not "_id" in record:
-                await self.logs.tool.insert_one({'name': 'db_put_noid',
-                                             'data': record,
-                                             'time': current_datetime()})
-            return await collection.insert_one(record)
+            raise TypeError("invalid record type '{}' provided".format(type(record_or_records)))
+
+    async def PUT(self, collection, record_or_records:typing.Union[typing.List, typing.Dict]):
+        db = self.get_default_database()
+        collection = collection or self._DEFAULT_COLLECTION
+        assert collection, "collection must be of type str"
+        collection = db[collection]
+
+        if isinstance(record_or_records, (list, tuple)):
+            return await collection.insert_many(record_or_records)
+        elif isinstance(record_or_records, dict):
+            return await collection.insert_one(record_or_records)
+        else:
+            raise TypeError("invalid record type '{}' provided".format(type(record_or_records)))
 
     async def REPLACE(self, collection, original, replacement:dict, upsert=False):
         db = self.get_default_database()
@@ -653,7 +666,7 @@ class AsyncIODoc(AsyncIOClient):
     _DOC_ENUMS:list = []
     _DOC_SETTINGS:str = None
 
-    def __init__(self, _id=None, doc_type:str=None, doc_sample:typing.Union[typing.Dict, typing.Text]=None, doc_schema:typing.Union[typing.Dict, typing.Text]=None, doc_id:str=None, mongo_uri:str=None, **kwargs):
+    def __init__(self, _id=None, doc_type:str=None, doc_sample:typing.Union[typing.Dict, str]=None, doc_schema:typing.Union[typing.Dict, str]=None, doc_id:str=None, mongo_uri:str=None, **kwargs):
         self._MONGO_URI = mongo_uri or self._MONGO_URI
         if callable(self._MONGO_URI):
             self._MONGO_URI = self._MONGO_URI()

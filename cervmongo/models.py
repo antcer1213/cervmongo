@@ -54,6 +54,8 @@ try:
         * accept fields using snake_case or camelCase keys
         * use camelCase keys in the generated OpenAPI spec (when supported)
         * have orm_mode on by default
+
+        - from fastapi-utils
         """
 
         class Config(BaseConfig):
@@ -72,6 +74,8 @@ except:
         * accept fields using snake_case or camelCase keys
         * use camelCase keys in the generated OpenAPI spec (when supported)
         * create an orm_mode Config attrib and have it on by default
+
+        - from fastapi-utils
         """
 
         class Config():
@@ -237,8 +241,15 @@ class MongoListResponse(list):
         else:
             self.clear()
 
-    def close(self):
-        """Closes cursor or clears list"""
+    def get(self) -> typing.Union[Cursor, typing.List]:
+        """returns cursor or list instance"""
+        if self._cursor:
+            return self._cursor
+        else:
+            return self
+
+    def close(self) -> None:
+        """closes cursor or clears list"""
         if self._cursor:
             self._cursor.close()
         else:
@@ -252,12 +263,12 @@ class MongoListResponse(list):
         # ~ else:
             # ~ return self._index + 1
 
-    def rewind(self):
+    def rewind(self) -> None:
         """rewinds cursor, if any"""
         if self._cursor:
             self._cursor.rewind()
 
-    def distinct(self, field:str="_id") -> list:
+    def distinct(self, field:str="_id") -> typing.List[typing.Any]:
         """returns list of distinct values based on field, defaults to '_id'. supports dot notation for nested values."""
         if self._cursor:
             self._cursor.rewind()
@@ -313,7 +324,7 @@ class MongoListResponse(list):
         else:
             return len(self)
 
-    def sort(self, sort:int=1, key:str="_id"):
+    def sort(self, sort:int=1, key:str="_id") -> 'self':
         """sorts cursor results or list results, default is cervmongo.ASC (int 1)
 
         Options:
@@ -334,7 +345,7 @@ class MongoListResponse(list):
                 super().sort(key=lambda item, field=key: sort_list(item, field))
             return self
 
-    def list(self) -> list:
+    def list(self) -> typing.List[typing.Dict]:
         """returns a new list representation of the current cursor"""
         if self._cursor:
             self._cursor.rewind()

@@ -32,7 +32,7 @@ def add_source_parser(_old_add_source_parser, self, *args, **kwargs):
 #
 # import os
 import sys
-sys.path.insert(0, '/home/anthony/development/cervmongo/')
+sys.path.insert(0, '/home/anthony/development/cervmongo/trunk/')
 
 # -- Project information -----------------------------------------------------
 
@@ -60,6 +60,7 @@ extensions = [
 ]
 
 autodoc_member_order = 'bysource'
+always_document_param_types = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

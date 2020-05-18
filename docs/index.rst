@@ -18,4 +18,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-* `Source Code </_modules/>`_
+* `Source Code <./_modules/index.html>`_

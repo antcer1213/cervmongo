@@ -71,24 +71,26 @@ try:
 except:
     logger.warning("gridfs is not installed")
     SUPPORT_GRIDFS = False #: True if gridfs functionality is available else False
-    class GridFSBucket: pass
+    class GridFSBucket: pass # NOTE: in case of refereneces
+
+_CollectionClientType = typing.TypeVar("CollectionClient")
 
 
 class SyncIOClient(MongoClient):
     """
         High-level MongoClient subclass with additional methods added for ease-of-use,
-        having some automated conveniences and default argument values.
+        having some automated conveniences and defaults.
     """
-    _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None)
+    _MONGO_URI = lambda _: getattr(Config, "MONGO_URI", None) #: Valid MongoDB URI, defaults to Config.MONGO_URI if not supplied
     _DEFAULT_COLLECTION = None
-    _KWARGS = None
+    _KWARGS = None #: saves originally supplied kwargs, if a reload is required
     _LOGGING_COND_GET = None
     _LOGGING_COND_POST = None
     _LOGGING_COND_PUT = None
     _LOGGING_COND_PATCH = None
     _LOGGING_COND_DELETE = None
 
-    def __init__(self, mongo_uri=None, default_collection=None, **kwargs):
+    def __init__(self, mongo_uri:typing.Optional[str]=None, default_collection:typing.Optional[str]=None, **kwargs):
         self._MONGO_URI = mongo_uri or self._MONGO_URI
         if callable(self._MONGO_URI):
             self._MONGO_URI = self._MONGO_URI()
@@ -116,7 +118,7 @@ class SyncIOClient(MongoClient):
                 self.FILES = GridFSBucket(db)
             else:
                 logger.warning("gridfsbucket not instantiated due to missing 'gridfs' package")
-                self.FILES = GridFSBucket() # empty object
+                self.FILES = None
 
     def __repr__(self):
         db = self.get_default_database()
@@ -148,7 +150,10 @@ class SyncIOClient(MongoClient):
                 one = True
         return (record, one)
 
-    def set_database(self, database):
+    def set_database(database:str) -> None:
+        """
+            is used to change or set database of client instance, also changes db in Config class
+        """
         Config.set_mongo_db(database)
         if self._KWARGS:
             SyncIOClient.__init__(self, mongo_uri=Config.MONGO_URI, default_collection=self._DEFAULT_COLLECTION, **self._KWARGS)
@@ -156,12 +161,23 @@ class SyncIOClient(MongoClient):
             SyncIOClient.__init__(self, mongo_uri=Config.MONGO_URI, default_collection=self._DEFAULT_COLLECTION)
 
     def COLLECTION(self, collection:str):
+        """
+            returns unique `CollectionClient <#cervmongo.main.cervmongo.main.SyncIOClient.COLLECTION.CollectionClient>`_ class instance
+
+            Be aware, CollectionClient is NOT a valid MongoClient. To access the original
+            SyncIOClient instance, use method get_client of CollectionClient instance.
+        """
+
         self._DEFAULT_COLLECTION = collection
+
+
         class CollectionClient:
-            __parent__ = CLIENT = self
+            """Convenience class that auto-supplies collection to all upper-cased SyncIOClient methods, where required"""
+
+            __parent__ = CLIENT = self #! the original SyncIOClient instance
             # INFO: variables
-            _DEFAULT_COLLECTION = collection
-            _MONGO_URI = self._MONGO_URI
+            _DEFAULT_COLLECTION = collection #: the default collection assigned
+            _MONGO_URI = self._MONGO_URI #: the MongoDB URI supplied from SyncIOClient instance
             # INFO: general methods
             GENERATE_ID = self.GENERATE_ID
             COLLECTION = self.COLLECTION
@@ -185,29 +201,35 @@ class SyncIOClient(MongoClient):
                 return "<cervmongo.SyncIOClient.CollectionClient>"
             def get_client(s):
                 return s.CLIENT
-        return CollectionClient()
 
-    def PAGINATED_QUERY(self, collection, limit:int=20,
+        # ~ if function: # NOTE: Make CollectionClient class a function attr?
+            # ~ setattr(function, "CollectionClient", CollectionClient) # NOTE: Make CollectionClient class a function attr?
+
+        return CollectionClient()
+    # ~ COLLECTION.__defaults__ = COLLECTION.__defaults__[:-1] + (COLLECTION,) # NOTE: Make CollectionClient class a function attr?
+
+    def PAGINATED_QUERY(self, collection:typing.Optional[str], limit:int=20,
                                 sort:PAGINATION_SORT_FIELDS=PAGINATION_SORT_FIELDS["_id"],
                                 after:str=None, before:str=None,
                                 page:int=None, endpoint:str="/",
                                 ordering:int=-1, query:dict={}, **kwargs):
-        """Returns paginated results of collection w/ query.
+        """
+            Returns paginated results of cursor from the collection query.
 
-Available pagination methods:
- - __Cursor-based (default)__
-    - after
-    - before
-    - limit (results per page, default 20)
- - __Time-based__ (a datetime field must be selected)
-    - sort (set to datetime field)
-    - after (records after this time)
-    - before (records before this time)
-    - limit (results per page, default 20)
- - __Offset-based__ (not recommended)
-    - limit (results per page, default 20)
-    - page
-"""
+            Available pagination methods:
+             - **Cursor-based (default)**
+                - after
+                - before
+                - limit (results per page, default 20)
+             - **Time-based** (a datetime field must be selected)
+                - sort (set to datetime field)
+                - after (records after this time)
+                - before (records before this time)
+                - limit (results per page, default 20)
+             - **Offset-based** (not recommended)
+                - limit (results per page, default 20)
+                - page
+        """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
@@ -329,40 +351,67 @@ Available pagination methods:
     PAGINATED_QUERY.clean_kwargs = lambda kwargs: clean_kwargs(ONLY=("limit", "sort", "after",
                                             "before", "page", "endpoint", "query"), kwargs=kwargs)
 
-    def GENERATE_ID(self, _id=None):
+    def GENERATE_ID(self, _id:str=None) -> DOC_ID:
+        """
+            returns a unique ObjectID, simply for convenience
+        """
         if _id:
             return DOC_ID.__supertype__(_id)
         else:
             return DOC_ID.__supertype__()
 
-    def DELETE(self, collection, record, soft:bool=False):
+    def DELETE(self, collection:typing.Optional[str], record_or_records, soft:bool=False) -> typing.Union[MongoDictResponse, MongoListResponse]:
+        """
+            deletes the requested document(s)
+
+            returns MongoDB response document
+
+            If soft=true, creates collection ('deleted.{collection}')
+            and inserts the deleted document there. field 'oid' is
+            guaranteed to equal the original document's '_id'.
+        """
         db = self.get_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
         collection = db[collection]
 
-        record = self._process_record_id_type(record)[0]
+        record_or_records = self._process_record_id_type(record_or_records)[0]
 
-        if soft:
-            data_record = self.GET(collection, record)
-            try:
-                self.PUT("deleted."+collection, data_record)
-            except:
-                data_record.pop("_id")
-                self.PUT("deleted."+collection, data_record)
+        if isinstance(record_or_records, (str, DOC_ID.__supertype__)):
+            record_or_records = {"_id": record_or_records}
 
-        if isinstance(record, (str, DOC_ID.__supertype__)):
-            return collection.delete_one({'_id': record})
-        elif isinstance(record, dict):
-            return collection.delete_one(record)
-        else:
+        if isinstance(record_or_records, dict):
+            data_record = collection.find_one_and_delete(record_or_records)
+            if soft:
+                try:
+                    data_record["oid"] = data_record["_id"]
+                    self.PUT("deleted."+collection, data_record)
+                except:
+                    data_record["oid"] = data_record.pop("_id")
+                    self.PUT("deleted."+collection, data_record)
+            return MongoDictResponse(data_record)
+        elif isinstance(record_or_records, (list, tuple)):
             results = []
-            for _id in record:
-                results.append(collection.delete_one({'_id': _id}))
-            return results
+            for _id in record_or_records:
+                data_record = collection.find_one_and_delete({'_id': _id})
+                if soft:
+                    try:
+                        data_record["oid"] = data_record["_id"]
+                        self.PUT("deleted."+collection, data_record)
+                    except:
+                        data_record["oid"] = data_record.pop("_id")
+                        self.PUT("deleted."+collection, data_record)
+                results.append(data_record)
 
-    def INDEX(self, collection, key:str="_id", sort:int=1, unique:bool=False, reindex:bool=False):
+            return MongoListResponse(results)
+        else:
+            raise TypeError("record_or_records was of invalid type '{}'".format(type(record_or_records)))
+
+    def INDEX(self, collection, key:str="_id", sort:int=1, unique:bool=False, reindex:bool=False) -> None:
+        """
+            creates an index, however most useful in constraining certain fields as unique
+        """
         db = self.get_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
@@ -385,7 +434,13 @@ Available pagination methods:
                 # TODO: provide a short clear exception?
                 raise
 
-    def ADD_FIELD(self, collection, field:str, value='', data=False, query:dict={}):
+    def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]='', data=False, query:dict={}) -> None:
+        """
+            adds field with value provided to all records in collection that match query
+
+            kwarg 'data', if provided, is an existing field in the record that can be used as the default value.
+            useful for name changes of fields in schema.
+        """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': False}})
@@ -404,28 +459,50 @@ Available pagination methods:
                 self.PATCH(collection, record['_id'], {"$set": {
                     field: value}})
 
-    def REMOVE_FIELD(self, collection, field:str, value='', query:dict={}):
+    def REMOVE_FIELD(self, collection, field:str, query:dict={}) -> None:
+        """
+            removes field of all records in collection that match query
+
+            useful for complete field removal, once field is no longer needed.
+        """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': True}})
         records = self.GET(collection, query=query, distinct=True)
 
         for record in records:
-            self.PATCH(collection, record, {"$unset": {field: value}})
+            self.PATCH(collection, record, {"$unset": {field: ""}})
 
     def UPLOAD(self, fileobj, filename:str=None, content_type:str=None, extension:str=None, **kwargs):
+        """
+            returns GridFS response document after successful upload
+
+            fileobj can be either valid filepath or file/file-like object,
+            all other kwargs are stored as meta data
+        """
+        assert self.FILES, "GridFS instance not initialized, run method 'set_database' with the desired database and try again"
         fileobj = file_and_fileobj(fileobj)
         metadata = get_file_meta_information(fileobj, filename=filename, content_type=content_type, extension=extension)
         filename = metadata['filename']
         metadata.update(kwargs)
         return self.FILES.upload_from_stream(filename, fileobj, metadata=metadata)
 
-    def ERASE(self, filename_or_id, revision:int=-1):
+    def ERASE(self, filename_or_id, revision:int=-1) -> None:
+        """
+            deletes the GridFS file. if multiple revisions, deletes most recent by default.
+
+            filename_or_id can be the _id field value or the filename value.
+        """
+        assert self.FILES, "GridFS instance not initialized, run method 'set_database' with the desired database and try again"
         fs_doc = self.DOWNLOAD(filename_or_id, revision=revision)
         self.FILES.delete(fs_doc._id)
         fs_doc.close()
 
     def DOWNLOAD(self, filename_or_id=None, revision:int=-1, skip:int=None, limit:int=None, sort:int=-1, **query):
+        """
+            returns download stream of file if filename_or_id is provided, else returns a cursor of files matching query
+        """
+        assert self.FILES, "GridFS instance not initialized, run method 'set_database' with the desired database and try again"
         revision = int(revision)
         if filename_or_id:
             if isinstance(filename_or_id, DOC_ID.__supertype__):
@@ -435,7 +512,24 @@ Available pagination methods:
 
         return self.FILES.find(query, limit=limit, skip=skip, sort=sort, no_cursor_timeout=True)
 
-    def GET(self, collection, record=None, sort:int=1, key:str="_id", lst:bool=None, count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
+    def GET(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, str]={}, sort:int=1, key:str="_id", count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
+        """
+            record can be either _id (accepts unicode form of ObjectId, as well as extended JSON bson format) or query
+
+            Unless certain kwargs are used (count, distinct, one), behaviour is as follows:
+
+            - if _id is recognized, one is set to true and will return the exact matching document
+            - if query is recognized, will return MongoList response of cursor
+            - if count is provided and _id is not recognized, returns number of documents in cursor
+            - if distinct is provided, returns a unique list of the field values (accepts dot notation)
+            - if one is provided, returns the first matching document of cursor
+
+            kwargs count, distinct, one cannot be used together, priority is as follows if all are provided:
+
+            1. count
+            2. distinct
+            3. one
+        """
         db = self.get_default_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection not provided"
@@ -445,23 +539,21 @@ Available pagination methods:
         cols = list(set(collection))
         results = []
         number_of_results = len(cols)
-        query = kwargs.pop("query", {})
 
         if distinct == True:
             distinct = "_id"
 
-        if record:
-            record, _one = self._process_record_id_type(record)
-            one = _one if _one else one
-            if one:
-                query.update({"_id": record})
-            else:
-                query.update(record)
+        id_or_query, _one = self._process_record_id_type(id_or_query)
+        one = _one if _one else one
+        if _one:
+            query = {"_id": id_or_query}
+        else:
+            query = id_or_query
 
         for collection in cols:
             collection = db[collection]
 
-            if any([query, not record and not search]):
+            if query or not search:
                 if count and not limit:
                     if query:
                         results.append(collection.count_documents(query, **kwargs))
@@ -544,31 +636,51 @@ Available pagination methods:
             return results
 
     def SEARCH(self, collection, search:str, **kwargs):
+        """
+            returns the results of querying textIndex of collection
+        """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         return self.GET(collection, search=search, **kwargs)
 
-    def POST(self, collection, record, many=False):
+    def POST(self, collection, record_or_records:typing.Union[typing.List, typing.Dict]):
+        """
+            creates new record(s) and returns MongoDB response document
+        """
         db = self.get_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         collection = db[collection]
 
-        if many:
-            return collection.insert_many(record)
+        if isinstance(record_or_records, (list, tuple)):
+            return collection.insert_many(record_or_records)
+        elif isinstance(record_or_records, dict):
+            return collection.insert_one(record_or_records)
         else:
-            return collection.insert_one(record)
+            raise TypeError("invalid record_or_records type '{}' provided".format(type(record_or_records)))
 
-    def PUT(self, collection, record, many:bool=False):
+    def PUT(self, collection, record_or_records:typing.Union[typing.List, typing.Dict]):
+        """
+            creates or replaces record(s) with exact _id provided, _id is required with record object(s)
+
+            returns original document, if replaced
+        """
         db = self.get_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         collection = db[collection]
 
-        if many:
-            return collection.insert_many(record)
+        results = []
+
+        if isinstance(record_or_records, (list, tuple)):
+            assert all([ record.get("_id", None) for record in record_or_records ]), "not all records provided contained an _id"
+            return collection.insert_many(record_or_records)
+        elif isinstance(record_or_records, dict):
+            assert record_or_records.get("_id", None), "no _id provided"
+            query = {"_id": record_or_records["_id"]}
+            return collection.find_one_and_replace(query, record_or_records)
         else:
-            return collection.insert_one(record)
+            raise TypeError("invalid record_or_records type '{}' provided".format(type(record_or_records)))
 
     def REPLACE(self, collection, original, replacement, upsert:bool=False):
         db = self.get_database()
@@ -642,7 +754,7 @@ class SyncIODoc(SyncIOClient):
     _DOC_ENUMS:list = []
     _DOC_SETTINGS:str = "settings"
 
-    def __init__(self, _id=None, doc_type:str=None, doc_sample:typing.Union[typing.Dict, typing.Text]=None, doc_schema:typing.Union[typing.Dict, typing.Text]=None, doc_id:str=None, mongo_uri:str=None, **kwargs):
+    def __init__(self, _id=None, doc_type:str=None, doc_sample:typing.Union[typing.Dict, str]=None, doc_schema:typing.Union[typing.Dict, str]=None, doc_id:str=None, mongo_uri:str=None, **kwargs):
         self._MONGO_URI = mongo_uri or self._MONGO_URI
         if callable(self._MONGO_URI):
             self._MONGO_URI = self._MONGO_URI()

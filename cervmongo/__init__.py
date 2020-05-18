@@ -42,6 +42,7 @@ from . import (
             )
 from .extra import convenience as convenience
 
+quick_load_client = convenience.quick_load_client
 
 get_client = main.get_client
 get_doc = main.get_doc
@@ -58,8 +59,6 @@ ASC = vars.ASCENDING
 DESC = vars.DESCENDING
 
 config = config.Config
-
-quick_load_client = convenience.quick_load_client
 
 def get_config() -> config:
     """returns the Config class to set MongoDB configuration"""

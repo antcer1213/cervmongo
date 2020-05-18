@@ -37,6 +37,9 @@ try:
 except:
     from dataclasses import dataclass
     MODEL = typing.NewType("DataModel", dataclass)
+
+# INFO: Custom Types
+MONGODB_URI = typing.NewType("MongoDB URI", str)
 YAML = typing.NewType("YAML Document", str)
 JSON = typing.NewType("JSON Document", str)
 ENUM = typing.NewType("Enum", Enum)
