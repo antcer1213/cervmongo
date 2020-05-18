@@ -59,6 +59,19 @@ class IntEnum(int, Enum): pass
 # NOTE: defaults to recommended fields; overwrite depending on your schema, use utils.generate_enum
 PAGINATION_SORT_FIELDS = Enum(value="Pagination Sort Fields", names=[(item, item) for item in ("_id", "created_datetime", "updated_datetime")])
 
+
+class ObjectIdStr(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not isinstance(v, ObjectId):
+            raise ValueError("Not a valid ObjectId")
+        return str(v)
+
+
 def str2bool(v):
     return str(v).lower() in ("yes", "true", "t", "1")
 

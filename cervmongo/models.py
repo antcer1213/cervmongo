@@ -41,6 +41,7 @@ from .vars import (
                     JSON,
                     ASCENDING,
                     DESCENDING,
+                    ObjectIdStr,
                     )
 from pymongo.cursor import Cursor
 try:
@@ -154,7 +155,10 @@ class _StandardResponse(DefaultModel):
                 }
             ]
         }
-
+        json_encoders = {type(DOC_ID.__supertype__): lambda x: str(x)}
+        orm_mode = True
+        allow_population_by_field_name = True
+        alias_generator = partial(snake2camel, start_lower=True)
 
 class StandardResponse(_StandardResponse):
     """a premade web API friendly response object"""
