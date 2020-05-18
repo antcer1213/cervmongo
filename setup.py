@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as _file:
 
 setuptools.setup(
     name="cervmongo",
-    version="0.1.19",
+    version="0.1.20",
     author="Anthony 'antcer1213' Cervantes",
     author_email="anthony.cervantes@cerver.info",
     description="An (even) higher-level MongoDB client",
