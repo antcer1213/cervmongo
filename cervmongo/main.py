@@ -236,21 +236,21 @@ class SyncIOClient(MongoClient):
         if isinstance(sort, ENUM.__supertype__):
             sort = sort.value
 
-        total_docs = self.GET(collection, query=query, count=True, empty=0)
+        total_docs = self.GET(collection, query, count=True, empty=0)
 
         if not page:
             if sort == "_id":
                 pagination_method = "cursor"
             else:
                 pagination_method = "time"
-            results = self.GET(collection, query=query,
+            results = self.GET(collection, query,
                                     limit=limit, key=sort, before=before,
                                     after=after, sort=ordering, empty=[]).list()
 
         else:
             assert page >= 1, "page must be equal to or greater than 1"
             pagination_method = "offset"
-            results = self.GET(collection, query=query,
+            results = self.GET(collection, query,
                                     perpage=limit, key=sort, page=page,
                                     sort=ordering, empty=[]).list()
 
@@ -282,12 +282,12 @@ class SyncIOClient(MongoClient):
 
             if pagination_method in ("cursor", "time"):
                 if before:
-                    check_ahead = self.GET(collection, query=query,
+                    check_ahead = self.GET(collection, query,
                                             limit=limit, key=sort, before=new_before, count=True, empty=0)
                     if not check_ahead:
                         new_before = None
                 elif after:
-                    check_ahead = self.GET(collection, query=query,
+                    check_ahead = self.GET(collection, query,
                                             limit=limit, key=sort, after=new_after, count=True, empty=0)
                     if not check_ahead:
                         new_after = None
@@ -445,10 +445,10 @@ class SyncIOClient(MongoClient):
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': False}})
         if data:
-            records = self.GET(collection, query=query, fields={
+            records = self.GET(collection, query, fields={
                 data: True}, empty=[])
         else:
-            records = self.GET(collection, query=query, fields={
+            records = self.GET(collection, query, fields={
                 '_id': True}, empty=[])
 
         for record in records:
@@ -468,12 +468,12 @@ class SyncIOClient(MongoClient):
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': True}})
-        records = self.GET(collection, query=query, distinct=True)
+        records = self.GET(collection, query, distinct=True)
 
         for record in records:
             self.PATCH(collection, record, {"$unset": {field: ""}})
 
-    def UPLOAD(self, fileobj, filename:str=None, content_type:str=None, extension:str=None, **kwargs):
+    def UPLOAD(self, fileobj:typing.Union[typing.IO, str], filename:str=None, content_type:str=None, extension:str=None, **kwargs):
         """
             returns GridFS response document after successful upload
 
@@ -487,7 +487,7 @@ class SyncIOClient(MongoClient):
         metadata.update(kwargs)
         return self.FILES.upload_from_stream(filename, fileobj, metadata=metadata)
 
-    def ERASE(self, filename_or_id, revision:int=-1) -> None:
+    def ERASE(self, filename_or_id:typing.Union[str, DOC_ID], revision:int=-1) -> None:
         """
             deletes the GridFS file. if multiple revisions, deletes most recent by default.
 
@@ -498,7 +498,7 @@ class SyncIOClient(MongoClient):
         self.FILES.delete(fs_doc._id)
         fs_doc.close()
 
-    def DOWNLOAD(self, filename_or_id=None, revision:int=-1, skip:int=None, limit:int=None, sort:int=-1, **query):
+    def DOWNLOAD(self, filename_or_id:typing.Optional[typing.Union[str, DOC_ID]]=None, revision:int=-1, skip:int=None, limit:int=None, sort:int=-1, **query):
         """
             returns download stream of file if filename_or_id is provided, else returns a cursor of files matching query
         """
@@ -905,7 +905,7 @@ class SyncIODoc(SyncIOClient):
             field: True
             })
 
-        record = self.GET(collection, query={field: value}, fields=additional, one=True, empty={})
+        record = self.GET(collection, {field: value}, fields=additional, one=True, empty={})
         assert record, 'Error: No record found'
 
         record['key'] = field
@@ -918,7 +918,7 @@ class SyncIODoc(SyncIOClient):
         # If _id specified on init, load actual record versus blank template
         if _id:
             if self._DOC_ID:
-                self.RECORD = self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True)
+                self.RECORD = self.GET(self._DOC_TYPE, {self._DOC_ID: _id}, one=True)
             else:
                 self.RECORD = self.GET(self._DOC_TYPE, _id)
         else:
@@ -940,14 +940,14 @@ class SyncIODoc(SyncIOClient):
         else:
             if self._DOC_ID:
                 return StandardResponse(
-                            data=self._p_r(self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True, empty={})),
+                            data=self._p_r(self.GET(self._DOC_TYPE, {self._DOC_ID: _id}, one=True, empty={})),
                             details={
                         "unique_id": self._DOC_ID
                         }
                     )
             else:
                 return StandardResponse(
-                            data=self._p_r(self.GET(self._DOC_TYPE, query={"_id": _id}, one=True, empty={})),
+                            data=self._p_r(self.GET(self._DOC_TYPE, {"_id": _id}, one=True, empty={})),
                             details={
                         "unique_id": self._DOC_ID
                         }
@@ -967,7 +967,7 @@ class SyncIODoc(SyncIOClient):
     def id(self):
         return self.RECORD.get(self._DOC_ID, None)
 
-    def create(self, save=False, trigger=None, template="{total}", query={}, **kwargs):
+    def create(self, save:bool=False, trigger=None, template:str="{total}", query:dict={}, **kwargs):
         assert self.RECORD.get('_id') is None, """Cannot use create method on
  an existing record. Use patch method instead."""
 
@@ -981,7 +981,7 @@ class SyncIODoc(SyncIOClient):
         else:
             self.RECORD.update(kwargs)
 
-        kwargs['total'] = str(self.GET(self._DOC_TYPE, query=query).count() + 1).zfill(6)
+        kwargs['total'] = str(self.GET(self._DOC_TYPE, query).count() + 1).zfill(6)
 
         if self._DOC_ID and not self.RECORD.get(self._DOC_ID):
             self.RECORD[self._DOC_ID] = self._generate_unique_id(template=template, **kwargs)
@@ -1040,7 +1040,7 @@ class SyncIODoc(SyncIOClient):
                 }
             }
 
-    def increment(self, query={}, **kwargs):
+    def increment(self, query:dict={}, **kwargs):
         assert self.RECORD.get('_id'), """Cannot use increment method on
  a non-existing record. Use create method instead."""
 
@@ -1065,7 +1065,7 @@ class SyncIODoc(SyncIOClient):
                 }
             }
 
-    def update(self, query={}, **kwargs):
+    def update(self, query:dict={}, **kwargs):
         assert self.RECORD.get('_id'), """Cannot use increment method on
  a non-existing record. Use create method instead."""
 

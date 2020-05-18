@@ -222,20 +222,20 @@ having some automated conveniences and defaults.
         if isinstance(sort, ENUM.__supertype__):
             sort = sort.value
 
-        total_docs = await self.GET(collection, query=query, count=True, empty=0)
+        total_docs = await self.GET(collection, query, count=True, empty=0)
 
         if not page:
             if sort == "_id":
                 pagination_method = "cursor"
             else:
                 pagination_method = "time"
-            cursor = await self.GET(collection, query=query,
+            cursor = await self.GET(collection, query,
                                     limit=limit, key=sort, before=before,
                                     after=after, sort=ordering, empty=[])
         else:
             assert page >= 1, "page must be equal to or greater than 1"
             pagination_method = "offset"
-            cursor = await self.GET(collection, query=query,
+            cursor = await self.GET(collection, query,
                                     perpage=limit, key=sort, page=page,
                                     sort=ordering, empty=[])
 
@@ -269,12 +269,12 @@ having some automated conveniences and defaults.
 
             if pagination_method in ("cursor", "time"):
                 if before:
-                    check_ahead = await self.GET(collection, query=query,
+                    check_ahead = await self.GET(collection, query,
                                             limit=limit, key=sort, before=new_before, empty=0, count=True)
                     if not check_ahead:
                         new_before = None
                 elif after:
-                    check_ahead = await self.GET(collection, query=query,
+                    check_ahead = await self.GET(collection, query,
                                             limit=limit, key=sort, after=new_after, empty=0, count=True)
                     if not check_ahead:
                         new_after = None
@@ -423,10 +423,10 @@ having some automated conveniences and defaults.
 
         query.update({field: {'$exists': False}})
         if data:
-            records = await self.GET(collection, query=query, fields={
+            records = await self.GET(collection, query, fields={
                 data: True}, empty=[])
         else:
-            records = await self.GET(collection, query=query, fields={
+            records = await self.GET(collection, query, fields={
                 '_id': True}, empty=[])
 
         for record in records:
@@ -442,7 +442,7 @@ having some automated conveniences and defaults.
             collection = self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {'$exists': True}})
-        records = await self.GET(collection, query=query, distinct=True)
+        records = await self.GET(collection, query, distinct=True)
 
         for record in records:
             await self.PATCH(collection, record, {"$unset": {field: ""}})
@@ -817,7 +817,7 @@ class AsyncIODoc(AsyncIOClient):
             field: True
             })
 
-        record = await self.GET(collection, query={field: value}, fields=additional, one=True, empty={})
+        record = await self.GET(collection, {field: value}, fields=additional, one=True, empty={})
         assert record, 'Error: No record found'
 
         record['key'] = field
@@ -830,7 +830,7 @@ class AsyncIODoc(AsyncIOClient):
         # If _id specified on init, load actual record versus blank template
         if _id:
             if self._DOC_ID:
-                self.RECORD = await self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True)
+                self.RECORD = await self.GET(self._DOC_TYPE, {self._DOC_ID: _id}, one=True)
             else:
                 self.RECORD = await self.GET(self._DOC_TYPE, _id)
         else:
@@ -852,14 +852,14 @@ class AsyncIODoc(AsyncIOClient):
         else:
             if self._DOC_ID:
                 return StandardResponse(
-                            data=self._p_r(self.GET(self._DOC_TYPE, query={self._DOC_ID: _id}, one=True, empty={})),
+                            data=self._p_r(self.GET(self._DOC_TYPE, {self._DOC_ID: _id}, one=True, empty={})),
                             details={
                         "unique_id": self._DOC_ID
                         }
                     )
             else:
                 return StandardResponse(
-                            data=self._p_r(self.GET(self._DOC_TYPE, query={"_id": _id}, one=True, empty={})),
+                            data=self._p_r(self.GET(self._DOC_TYPE, {"_id": _id}, one=True, empty={})),
                             details={
                         "unique_id": self._DOC_ID
                         }
@@ -893,7 +893,7 @@ class AsyncIODoc(AsyncIOClient):
         else:
             self.RECORD.update(kwargs)
 
-        kwargs['total'] = str(self.GET(self._DOC_TYPE, query=query).count() + 1).zfill(6)
+        kwargs['total'] = str(self.GET(self._DOC_TYPE, query).count() + 1).zfill(6)
 
         if self._DOC_ID and not self.RECORD.get(self._DOC_ID):
             self.RECORD[self._DOC_ID] = self._generate_unique_id(template=template, **kwargs)
