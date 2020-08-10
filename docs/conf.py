@@ -39,8 +39,8 @@ sys.path.insert(0, '/home/anthony/development/cervmongo/trunk/')
 project = 'cervmongo'
 copyright = '2020, Anthony "antcer1213" Cervantes'
 author = 'Anthony "antcer1213" Cervantes'
-version = "0.1.21"
-release = "0.1.21"
+version = "0.1.22"
+release = "0.1.22"
 html_logo = '_static/logo_cropped.png'
 html_favicon = '_static/favicon.ico'
 

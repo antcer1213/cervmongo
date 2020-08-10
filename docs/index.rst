@@ -1,5 +1,5 @@
 
-Welcome to cervmongo's documentation!
+Welcome to cervmongo!
 =====================================
 
 .. toctree::

@@ -13,10 +13,6 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install cervmon
 pip install cervmongo
 ```
 
-## Documentation
-
-Full documentation available [here](https://cerver.info/packages/cervmongo/).
-
 ## Usage
 
 ```python
@@ -123,6 +119,10 @@ multi_col_results = client.GET(["test_col1", "test_col2"], {
         - or:
             - __MONGO_URI__ (_default None, ex. "mongodb://localhost:27017/app?replicaSet=appSet"_)
             - For more information on a MongoDB URI, see here: [Connection String URI Format](https://docs.mongodb.com/manual/reference/connection-string/).
+
+## Documentation
+
+Full documentation available [here](https://cerver.info/packages/cervmongo/).
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
