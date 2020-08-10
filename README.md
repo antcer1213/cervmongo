@@ -1,4 +1,4 @@
-[![GitHub stars](https://img.shields.io/github/stars/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo/stargazers) [![GitHub forks](https://img.shields.io/github/forks/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo/network) [![GitHub issues](https://img.shields.io/github/issues/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo/issues) [![GitHub license](https://img.shields.io/github/license/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo)
+[![GitHub stars](https://img.shields.io/github/stars/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo/stargazers) [![GitHub forks](https://img.shields.io/github/forks/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo/network) [![GitHub issues](https://img.shields.io/github/issues/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo/issues) [![GitHub license](https://img.shields.io/github/license/antcer1213/cervmongo)](https://github.com/antcer1213/cervmongo) [![Build Status](https://travis-ci.com/antcer1213/cervmongo.svg?branch=master)](https://travis-ci.com/antcer1213/cervmongo)
 
 
 # cervmongo
