@@ -96,7 +96,7 @@ MONGO_DB={}
         cervmongo.config.set_mongo_db(example_database_one)
         client = cervmongo.get_client()()
         collection = client.COLLECTION(example_collection)
-        collection.PUT(example_document) # INFO: create document
+        collection.POST(example_document) # INFO: create document
         document = collection.GET({"unique_id": "testid"}, one=True, empty={})
         doc_id = document.get("_id") # INFO: remove auto-created _id field
         collection.DELETE(doc_id) # INFO: delete record to keep it clean
