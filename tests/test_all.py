@@ -69,13 +69,16 @@ class BasicTests(unittest.TestCase):
     def test_file_settings_with_dotenv(self):
         cervmongo.config.reset()
 
+        import tempfile
+        tempdir = tempfile.gettempdir()
+        env_file = os.path.join(tempdir, ".env")
+
         sample_dotenv_one = """
 MONGO_DB={}
 """.format(example_database_one)
-        with open(".env", "w") as _file:
+        with open(env_file, "w") as _file:
             _file.write(sample_dotenv_one)
-        cervmongo.config.reload_from_file(env_path=".env", override=True)
-        os.remove(".env") # INFO: delete temp .env file
+        cervmongo.config.reload_from_file(env_path=env_file, override=True)
         self.assertEqual(cervmongo.config.MONGO_DB, example_database_one)
 
     def test_stream_settings_with_dotenv(self):
