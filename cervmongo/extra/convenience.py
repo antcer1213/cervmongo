@@ -32,11 +32,11 @@ from ..main import (
                 )
 
 
-def quick_load_client(database:str="test_db", collection:str="test_col", replica_set:str=None, async:bool=False):
+def quick_load_client(database:str="test_db", collection:str="test_col", replica_set:str=None, async_:bool=False):
     """Returns CollectionClient instance"""
     Config.set_mongo_db(database).set_mongo_replica_set(replica_set)
 
-    if async:
+    if async_:
         client = get_async_client()
     else:
         client = get_client()

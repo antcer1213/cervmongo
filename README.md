@@ -22,7 +22,7 @@ col_client = cervmongo.quick_load_client(
                                 database="test_db",
                                 collection="test_col",
                                 replica_set=None,
-                                async=False
+                                async_=False
                                 ) # convenience function
 
 col_recs = col_client.GET() # returns cursor as very cool MongoListResponse
