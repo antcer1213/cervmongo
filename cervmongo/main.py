@@ -150,7 +150,7 @@ class SyncIOClient(MongoClient):
                 one = True
         return (record, one)
 
-    def set_database(database:str) -> None:
+    def set_database(self, database:str) -> None:
         """
             is used to change or set database of client instance, also changes db in Config class
         """

@@ -84,7 +84,7 @@ multi_col_results = client.GET(["test_col1", "test_col2"], {
  1. full testing on AIO Client & Doc classes
  2. finish type hints, function hints, and docstrings for readability
  3. pydantic first-class treatment
- 4. restructuring/refactoring...
+ 4. restructuring/refactoring/optimizing
  5. web api
     - datatable mongodb plugin + web endpoint
     - restful fastapi server - extra

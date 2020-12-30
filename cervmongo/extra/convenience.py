@@ -32,9 +32,9 @@ from ..main import (
                 )
 
 
-def quick_load_client(database:str="test_db", collection:str="test_col", replica_set:str=None, async_:bool=False):
+def quick_load_client(host:str=None, port:int=None, database:str="test_db", collection:str="test_col", replica_set:str=None, async_:bool=False):
     """Returns CollectionClient instance"""
-    Config.set_mongo_db(database).set_mongo_replica_set(replica_set)
+    Config.set_mongo_host(host).set_mongo_port(port).set_mongo_db(database).set_mongo_replica_set(replica_set)
 
     if async_:
         client = get_async_client()

@@ -105,6 +105,32 @@ class Config(metaclass=MetaConfig):
         return cls
 
     @classmethod
+    def set_mongo_host(cls:typing.Type[ConfigClass], host:str) -> ConfigClass:
+        """
+            assigns the MONGO_HOST var in config and regenerates mongodb uri
+
+            returns Class
+        """
+        if host:
+            assert isinstance(host, str), "host must be a string"
+            cls.MONGO_HOST = host
+            cls.generate_mongo_uri()
+        return cls
+
+    @classmethod
+    def set_mongo_port(cls:typing.Type[ConfigClass], port:int) -> ConfigClass:
+        """
+            assigns the MONGO_PORT var in config and regenerates mongodb uri
+
+            returns Class
+        """
+        if port:
+            assert isinstance(port, int), "port must be an integer"
+            cls.MONGO_PORT = port
+            cls.generate_mongo_uri()
+        return cls
+
+    @classmethod
     def set_mongo_replica_set(cls:typing.Type[ConfigClass], replica_set=None) -> ConfigClass:
         """
             assigns the MONGO_REPLICA_SET var in config and regenerates mongodb uri
