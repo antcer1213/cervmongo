@@ -564,7 +564,7 @@ class SyncIOClient(MongoClient):
                     results.append(cursor.sort([(key, sort)]).distinct(distinct))
                 elif perpage:
                     total = (page - 1) * perpage
-                    cursor = collection.find(query, fields, **kwargs)
+                    cursor = collection.find(query, projection=fields, **kwargs)
                     results.append(MongoListResponse(cursor.sort([(key, sort)]).skip(total).limit(perpage)))
                 elif limit:
                     if any((query, after, before)):
@@ -598,13 +598,13 @@ class SyncIOClient(MongoClient):
                             cursor = collection.count_documents(query, limit=limit, hint=[(key, sort)], **kwargs)
                         results.append(cursor)
                     else:
-                        cursor = collection.find(query, fields, **kwargs).sort([(key, sort)]).limit(limit)
+                        cursor = collection.find(query, projection=fields, **kwargs).sort([(key, sort)]).limit(limit)
                         results.append(MongoListResponse(cursor))
                 elif one:
-                    val = collection.find_one(query, fields, **kwargs)
+                    val = collection.find_one(query, projection=fields, sort=[(key, sort)], **kwargs)
                     results.append(MongoDictResponse(val) if val else empty)
                 else:
-                    cursor = collection.find(query, fields, **kwargs).sort([(key, sort)])
+                    cursor = collection.find(query, projection=fields, **kwargs).sort([(key, sort)])
                     results.append(MongoListResponse(cursor))
             elif search:
                 try:

@@ -482,7 +482,7 @@ having some automated conveniences and defaults.
                     results.append(sorted(cursor))
                 elif perpage:
                     total = (page - 1) * perpage
-                    cursor = collection.find(query, fields, **kwargs)
+                    cursor = collection.find(query, projection=fields, **kwargs)
                     results.append(cursor.sort([(key, sort)]).skip(total).limit(perpage))
                 elif limit:
                     if any((query, after, before)):
@@ -516,13 +516,13 @@ having some automated conveniences and defaults.
                             cursor = len(await collection.find(query, fields, **kwargs).sort([(key, sort)]).to_list(limit))
                         results.append(cursor)
                     else:
-                        cursor = collection.find(query, fields, **kwargs).sort([(key, sort)]).limit(limit)
+                        cursor = collection.find(query, projection=fields, **kwargs).sort([(key, sort)]).limit(limit)
                         results.append(cursor)
                 elif one:
-                    val = await collection.find_one(query, fields, **kwargs)
+                    val = await collection.find_one(query, projection=fields, sort=[(key, sort)], **kwargs)
                     results.append(val if val else empty)
                 else:
-                    cursor = collection.find(query, fields, **kwargs).sort([(key, sort)])
+                    cursor = collection.find(query, projection=fields, **kwargs).sort([(key, sort)])
                     results.append(cursor)
             elif search:
                 try:
