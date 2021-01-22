@@ -591,7 +591,7 @@ having some automated conveniences and defaults.
 
         if isinstance(record_or_records, (list, tuple)):
             assert all([ record.get("_id", None) for record in record_or_records ]), "not all records provided contained an _id"
-            return await collection.insert_many(record_or_records)
+            return await collection.insert_many(record_or_records, ordered=False)
         elif isinstance(record_or_records, dict):
             assert record_or_records.get("_id", None), "no _id provided"
             query = {"_id": record_or_records["_id"]}

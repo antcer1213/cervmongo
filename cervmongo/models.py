@@ -229,6 +229,7 @@ class MongoListResponse(list):
             self._cursor = cursor
             self._cursor.rewind()
             self.__self__ = self._cursor
+            self.__
         else:
             self._cursor = None
             super().__init__(cursor)
@@ -238,6 +239,22 @@ class MongoListResponse(list):
             return str(self._cursor)
         else:
             return super().__repr__()
+
+    def __len__(self):
+        if self._cursor:
+            try:
+                self._cursor.rewind()
+                return self._cursor.count(with_limit_and_skip=True)
+            except:
+                col = self._cursor._Cursor__collection
+                query = self._cursor._Cursor__spec or {}
+                limit = self._cursor._Cursor__limit
+                sort = self._cursor._Cursor__ordering
+                if sort:
+                    sort = sort.items()
+                return col.count_documents(query, limit=limit, hint=sort)
+        else:
+            return super().__len__()
 
     def __del__(self):
         if self._cursor:
@@ -313,20 +330,7 @@ class MongoListResponse(list):
 
     def count(self) -> int:
         """returns the count of the number of records in cursor or list results"""
-        if self._cursor:
-            try:
-                self._cursor.rewind()
-                return self._cursor.count(with_limit_and_skip=True)
-            except:
-                col = self._cursor._Cursor__collection
-                query = self._cursor._Cursor__spec or {}
-                limit = self._cursor._Cursor__limit
-                sort = self._cursor._Cursor__ordering
-                if sort:
-                    sort = sort.items()
-                return col.count_documents(query, limit=limit, hint=sort)
-        else:
-            return len(self)
+        return len(self)
 
     def sort(self, sort:int=1, key:str="_id") -> 'self':
         """sorts cursor results or list results, default is cervmongo.ASC (int 1)

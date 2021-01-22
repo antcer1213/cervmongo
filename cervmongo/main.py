@@ -672,7 +672,7 @@ class SyncIOClient(MongoClient):
 
         if isinstance(record_or_records, (list, tuple)):
             assert all([ record.get("_id", None) for record in record_or_records ]), "not all records provided contained an _id"
-            return collection.insert_many(record_or_records)
+            return collection.insert_many(record_or_records, ordered=False)
         elif isinstance(record_or_records, dict):
             assert record_or_records.get("_id", None), "no _id provided"
             query = {"_id": record_or_records["_id"]}
@@ -689,51 +689,43 @@ class SyncIOClient(MongoClient):
         return collection.replace_one({'_id': original},
                     replacement, upsert=upsert)
 
-    def PATCH(self, collection, original, updates, w:int=1, upsert:bool=False, multi:bool=False, log=None):
-        db = self.get_database()
+    def PATCH(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, typing.List, str], updates:typing.Union[typing.Dict, typing.List], upsert:bool=False, w:int=1):
+        db = self.get_default_database()
         collection = collection or self._DEFAULT_COLLECTION
-        assert collection, "collection must be of type str"
+        assert collection, "collection not provided"
         collection = db[collection]
 
         if w != 1:
             WRITE = WriteConcern(w=0)
-            _collection = collection.with_options(write_concern=WRITE)
-        else:
-            _collection = collection
-        if log:
-            try:
-                pass # TODO: optional, may not incorporate
-            except:
-                pass
+            collection = collection.with_options(write_concern=WRITE)
 
-        if multi:
-            results = _collection.update_many(original, updates, upsert=False) # explictly false
-            return results
-        elif isinstance(original, (str, DOC_ID.__supertype__)):
-            original = self._process_record_id_type(original)
-            query = {'_id': original}
+        if isinstance(id_or_query, (str, DOC_ID.__supertype__)):
+            assert isinstance(updates, dict), "updates must be dict"
+            id_or_query, _ = self._process_record_id_type(id_or_query)
+            query = {'_id': id_or_query}
+
             set_on_insert_id = {"$setOnInsert": query}
             updates.update(set_on_insert_id)
 
-            results = _collection.update_one(query, updates, upsert=upsert)
-            return results
-        else:
+            return collection.update_one(query, updates, upsert=upsert)
+        elif isinstance(id_or_query, dict):
+            assert isinstance(updates, dict), "updates must be dict"
+            return collection.update_many(id_or_query, updates, upsert=upsert)
+        elif isinstance(id_or_query, (tuple, list)):
+            assert isinstance(updates, (tuple, list)), "updates must be list or tuple"
+
             results = []
-            for i, _id in enumerate(original):
-                _id = self._process_record_id_type(_id)
+            for i, _id in enumerate(id_or_query):
+                _id, _ = self._process_record_id_type(id_or_query)
                 query = {'_id': _id}
                 set_on_insert_id = {"$setOnInsert": query}
                 updates[i].update(set_on_insert_id)
 
-                result = collection.update_one(query, updates[i], upsert=upsert)
-                results.append(result)
-            db["_logs"].insert_one({
-                                    'name': 'reindex',
-                                    'db': db,
-                                    'collection': collection,
-                                    'datetime': current_datetime()
-                                    })
+                results.append(collection.update_one(query, updates[i], upsert=upsert))
+
             return results
+        else:
+            raise Error("unidentified error")
 
 
 class SyncIODoc(SyncIOClient):
