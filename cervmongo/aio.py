@@ -579,15 +579,23 @@ having some automated conveniences and defaults.
             raise TypeError("invalid record type '{}' provided".format(type(record_or_records)))
 
     async def PUT(self, collection, record_or_records:typing.Union[typing.List, typing.Dict]):
+        """
+            creates or replaces record(s) with exact _id provided, _id is required with record object(s)
+
+            returns original document, if replaced
+        """
         db = self.get_default_database()
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         collection = db[collection]
 
         if isinstance(record_or_records, (list, tuple)):
+            assert all([ record.get("_id", None) for record in record_or_records ]), "not all records provided contained an _id"
             return await collection.insert_many(record_or_records)
         elif isinstance(record_or_records, dict):
-            return await collection.insert_one(record_or_records)
+            assert record_or_records.get("_id", None), "no _id provided"
+            query = {"_id": record_or_records["_id"]}
+            return await collection.find_one_and_replace(query, record_or_records, upsert=True)
         else:
             raise TypeError("invalid record type '{}' provided".format(type(record_or_records)))
 

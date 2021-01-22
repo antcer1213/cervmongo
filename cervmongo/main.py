@@ -670,15 +670,13 @@ class SyncIOClient(MongoClient):
         assert collection, "collection must be of type str"
         collection = db[collection]
 
-        results = []
-
         if isinstance(record_or_records, (list, tuple)):
             assert all([ record.get("_id", None) for record in record_or_records ]), "not all records provided contained an _id"
             return collection.insert_many(record_or_records)
         elif isinstance(record_or_records, dict):
             assert record_or_records.get("_id", None), "no _id provided"
             query = {"_id": record_or_records["_id"]}
-            return collection.find_one_and_replace(query, record_or_records)
+            return collection.find_one_and_replace(query, record_or_records, upsert=True)
         else:
             raise TypeError("invalid record_or_records type '{}' provided".format(type(record_or_records)))
 
