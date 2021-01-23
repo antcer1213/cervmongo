@@ -229,7 +229,6 @@ class MongoListResponse(list):
             self._cursor = cursor
             self._cursor.rewind()
             self.__self__ = self._cursor
-            self.__
         else:
             self._cursor = None
             super().__init__(cursor)
