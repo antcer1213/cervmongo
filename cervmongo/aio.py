@@ -611,51 +611,46 @@ having some automated conveniences and defaults.
         return await collection.replace_one({'_id': original},
                     replacement, upsert=upsert)
 
-    async def PATCH(self, collection, original, updates, upsert:bool=False, w:int=1, multi:bool=False, log=False):
+    async def PATCH(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, typing.List, str], updates:typing.Union[typing.Dict, typing.List], upsert:bool=False, w:int=1):
         db = self.get_default_database()
-        if not collection:
-            if hasattr(self, '_DEFAULT_COLLECTION'):
-                collection = self._DEFAULT_COLLECTION
-        assert collection, "collection must be of type str"
-
+        collection = collection or self._DEFAULT_COLLECTION
+        assert collection, "collection not provided"
         collection = db[collection]
 
         if w != 1:
-            WRITE = WriteConcern(w=0)
-            _collection = collection.with_options(write_concern=WRITE)
-        else:
-            _collection = collection
-        if log:
-            try:
-                pass # TODO: optional, may not incorporate
-            except:
-                pass
+            WRITE = WriteConcern(w=w)
+            collection = collection.with_options(write_concern=WRITE)
 
-        original = self._process_record_id_type(original)
+        if isinstance(id_or_query, (str, DOC_ID.__supertype__)):
+            assert isinstance(updates, dict), "updates must be dict"
+            id_or_query, _ = self._process_record_id_type(id_or_query)
+            query = {'_id': id_or_query}
 
-        if multi:
-            results = await _collection.update_many(original, updates, upsert=upsert)
+            set_on_insert_id = {"$setOnInsert": query}
+            updates.update(set_on_insert_id)
 
+            results = await collection.update_one(query, updates, upsert=upsert)
             return results
-        elif isinstance(original, (str, ObjectId)):
-            query = {'_id': original}
-            updates["$setOnInsert"] = query
-            results = await _collection.update_one(query, updates, upsert=upsert)
+        elif isinstance(id_or_query, dict):
+            assert isinstance(updates, dict), "updates must be dict"
+            results = await collection.update_many(id_or_query, updates, upsert=upsert)
             return results
-        else:
+        elif isinstance(id_or_query, (tuple, list)):
+            assert isinstance(updates, (tuple, list)), "updates must be list or tuple"
+
             results = []
-            for i, _id in enumerate(original):
-                _id = self._process_record_id_type(_id)
+            for i, _id in enumerate(id_or_query):
+                _id, _ = self._process_record_id_type(id_or_query)
                 query = {'_id': _id}
-                updates["$setOnInsert"] = query
+                set_on_insert_id = {"$setOnInsert": query}
+                updates[i].update(set_on_insert_id)
+
                 result = await collection.update_one(query, updates[i], upsert=upsert)
                 results.append(result)
-            await self.logs.other.insert_one({'name': 'reindex',
-                                        'db': db,
-                                        'collection': collection,
-                                        'datetime': current_datetime()})
-            return results
 
+            return results
+        else:
+            raise Error("unidentified error")
 
 
 class AsyncIODoc(AsyncIOClient):

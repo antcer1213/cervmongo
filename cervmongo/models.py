@@ -261,6 +261,29 @@ class MongoListResponse(list):
         else:
             self.clear()
 
+    def __iter__(self):
+        if self._cursor:
+            self._cursor.rewind()
+            return self._cursor
+        else:
+            return self
+
+    def __next__(self):
+        if self._cursor:
+            return self._cursor.__next__()
+        else:
+            return super().__next__()
+
+    def __getitem__(self, index):
+        if self._cursor:
+            assert isinstance(index, int)
+            for i, _ in enumerate(self):
+                if i == index:
+                    return _
+            raise IndexError("index {} is out of range".format(index))
+        else:
+            return super().__getitem__(index)
+
     def get(self) -> typing.Union[Cursor, typing.List]:
         """returns cursor or list instance"""
         if self._cursor:

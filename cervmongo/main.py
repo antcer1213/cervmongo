@@ -696,7 +696,7 @@ class SyncIOClient(MongoClient):
         collection = db[collection]
 
         if w != 1:
-            WRITE = WriteConcern(w=0)
+            WRITE = WriteConcern(w=w)
             collection = collection.with_options(write_concern=WRITE)
 
         if isinstance(id_or_query, (str, DOC_ID.__supertype__)):
