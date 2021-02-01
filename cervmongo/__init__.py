@@ -30,7 +30,13 @@ __all__ = [
         "ASC", "DESC",
         "quick_load_client",
         "get_config",
+        "__version_info__", "__version__"
         ]
+
+from ._version import (
+            __version_info__,
+            __version__,
+            )
 
 from . import (
             main,

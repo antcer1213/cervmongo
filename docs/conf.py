@@ -5,7 +5,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import sphinx
 import sphinx_rtd_theme
-import recommonmark
 
 def monkeypatch(cls):
     """ decorator to monkey-patch methods """
@@ -32,15 +31,18 @@ def add_source_parser(_old_add_source_parser, self, *args, **kwargs):
 #
 import os.path
 import sys
-if os.path.exists('/home/anthony/development/cervmongo/trunk/'):
-    sys.path.insert(0, '/home/anthony/development/cervmongo/trunk/')
+if os.path.exists('../../trunk/'):
+    print("found main trunk...")
+    sys.path.insert(0, os.path.abspath('../../trunk/'))
 
 # -- Project information -----------------------------------------------------
+import cervmongo
 
 project = 'cervmongo'
 copyright = '2020, Anthony "antcer1213" Cervantes'
 author = 'Anthony "antcer1213" Cervantes'
-version = release = "0.1.80"
+version = release = cervmongo.__version__
+print("generating documentation for version {}".format(version))
 html_logo = '_static/logo_cropped.png'
 html_favicon = '_static/favicon.ico'
 
@@ -55,7 +57,6 @@ extensions = [
     'sphinx.ext.todo',
     "sphinx_rtd_theme",
     'sphinx_autodoc_typehints',
-    #'recommonmark',
     'm2r',
 ]
 

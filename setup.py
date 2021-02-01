@@ -6,9 +6,14 @@ with open("README.md", "r") as _file:
 with open("requirements.txt", "r") as _file:
     requirements = _file.readlines()[:-1]
 
+with open("cervmongo/_version.py", "r") as _file:
+    # NOTE: imports __version__ var
+    exec(_file.read())
+
+
 setuptools.setup(
     name="cervmongo",
-    version="0.1.80",
+    version=__version__,
     author="Anthony 'antcer1213' Cervantes",
     author_email="anthony.cervantes@cerver.info",
     description="An (even) higher-level MongoDB client",
