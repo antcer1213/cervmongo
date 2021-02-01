@@ -29,8 +29,7 @@ __all__ = [
         "SUPPORT_PYDANTIC",
         "ASC", "DESC",
         "quick_load_client",
-        "get_config",
-        "__version_info__", "__version__"
+        "get_config"
         ]
 
 from ._version import (
