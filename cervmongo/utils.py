@@ -65,6 +65,26 @@ def detect_mimetype(filename) -> str:
 
     return mimetype
 
+
+def flatten_dict(dictionary: dict) -> dict:
+    new_dict = {}
+    for key, value in dictionary.items():
+        if isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                new_dict["{}.{}".format(key, subkey)] = subvalue
+                if isinstance(subvalue, dict):
+                    subvalue = flatten_dict(subvalue)
+                    for subsubkey, subsubvalue in subvalue.items():
+                        new_dict["{}.{}.{}".format(key, subkey, subsubkey)] = subvalue
+        elif isinstance(value, (tuple, list)):
+            for subkey, subvalue in enumerate(value):
+                new_dict["{}.{}".format(key, subkey)] = subvalue
+        else:
+            new_dict[key] = value
+
+    return new_dict
+
+
 def file_and_fileobj(fileobj):
     if isinstance(fileobj, str):
         if os.path.exists(fileobj):

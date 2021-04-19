@@ -136,10 +136,10 @@ having some automated conveniences and defaults.
         if isinstance(record, str):
             one = True
             if "$oid" in record:
-                record = json_load(record)
+                record = {"$in": [json_load(record), record]}
             else:
                 try:
-                    record = DOC_ID.__supertype__(record)
+                    record = {"$in": [DOC_ID.__supertype__(record), record]}
                 except:
                     pass
         elif isinstance(record, DOC_ID.__supertype__):
@@ -251,7 +251,7 @@ having some automated conveniences and defaults.
         new_before = None
 
         if results:
-            _id = results[-1]['_id']
+            _id = results[-1]["_id"]
             try:
                 date = results[-1][sort].isoformat()
             except:
@@ -259,7 +259,7 @@ having some automated conveniences and defaults.
             if len(results) == limit:
                 new_after = template.format(_id=_id, date=date)
 
-            _id = results[0]['_id']
+            _id = results[0]["_id"]
             try:
                 date = results[0][sort].isoformat()
             except:
@@ -388,13 +388,13 @@ having some automated conveniences and defaults.
                 await self.PUT("deleted."+collection, data_record)
 
         if isinstance(record, (str, ObjectId)):
-            return await collection.delete_one({'_id': record})
+            return await collection.delete_one({"_id": record})
         elif isinstance(record, dict):
             return await collection.delete_one(record)
         else:
             results = []
             for _id in record:
-                results.append(await collection.delete_one({'_id': _id}))
+                results.append(await collection.delete_one({"_id": _id}))
             return results
 
     def INDEX(self, collection, key:str="_id", sort:int=1, unique:bool=False, reindex:bool=False):
@@ -421,27 +421,27 @@ having some automated conveniences and defaults.
                 collection = self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
-        query.update({field: {'$exists': False}})
+        query.update({field: {"$exists": False}})
         if data:
             records = await self.GET(collection, query, fields={
                 data: True}, empty=[])
         else:
             records = await self.GET(collection, query, fields={
-                '_id': True}, empty=[])
+                "_id": True}, empty=[])
 
         for record in records:
             if data:
-                await self.PATCH(collection, record['_id'], {"$set": {
+                await self.PATCH(collection, record["_id"], {"$set": {
                     field: record[data]}})
             else:
-                await self.PATCH(collection, record['_id'], {"$set": {
+                await self.PATCH(collection, record["_id"], {"$set": {
                     field: value}})
 
     async def REMOVE_FIELD(self, collection, field:str, query:dict={}) -> None:
         if not collection:
             collection = self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
-        query.update({field: {'$exists': True}})
+        query.update({field: {"$exists": True}})
         records = await self.GET(collection, query, distinct=True)
 
         for record in records:
@@ -608,7 +608,7 @@ having some automated conveniences and defaults.
 
         collection = db[collection]
 
-        return await collection.replace_one({'_id': original},
+        return await collection.replace_one({"_id": original},
                     replacement, upsert=upsert)
 
     async def PATCH(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, typing.List, str], updates:typing.Union[typing.Dict, typing.List], upsert:bool=False, w:int=1):
@@ -624,7 +624,7 @@ having some automated conveniences and defaults.
         if isinstance(id_or_query, (str, DOC_ID.__supertype__)):
             assert isinstance(updates, dict), "updates must be dict"
             id_or_query, _ = self._process_record_id_type(id_or_query)
-            query = {'_id': id_or_query}
+            query = {"_id": id_or_query}
 
             set_on_insert_id = {"$setOnInsert": query}
             updates.update(set_on_insert_id)
@@ -641,7 +641,7 @@ having some automated conveniences and defaults.
             results = []
             for i, _id in enumerate(id_or_query):
                 _id, _ = self._process_record_id_type(id_or_query)
-                query = {'_id': _id}
+                query = {"_id": _id}
                 set_on_insert_id = {"$setOnInsert": query}
                 updates[i].update(set_on_insert_id)
 
@@ -869,8 +869,8 @@ class AsyncIODoc(AsyncIOClient):
                     )
 
     async def reload(self):
-        assert self.RECORD.get('_id')
-        self.RECORD = await self.GET(self._DOC_TYPE, self.RECORD['_id'])
+        assert self.RECORD.get("_id")
+        self.RECORD = await self.GET(self._DOC_TYPE, self.RECORD["_id"])
 
         return {
             "data": self._p_r(self.RECORD),
@@ -883,7 +883,7 @@ class AsyncIODoc(AsyncIOClient):
         return self.RECORD.get(self._DOC_ID, None)
 
     async def create(self, save:bool=False, trigger=None, template:str="{total}", query:dict={}, **kwargs):
-        assert self.RECORD.get('_id') is None, """Cannot use create method on
+        assert self.RECORD.get("_id") is None, """Cannot use create method on
  an existing record. Use patch method instead."""
 
         if self._DOC_MARSHMALLOW:
@@ -913,13 +913,13 @@ class AsyncIODoc(AsyncIOClient):
         self.RECORD
 
     async def push(self, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use push method on
+        assert self.RECORD.get("_id"), """Cannot use push method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        await self.PATCH(None, self.RECORD['_id'], {"$push": kwargs})
+        await self.PATCH(None, self.RECORD["_id"], {"$push": kwargs})
         await self.reload()
 
         keys = list(kwargs.keys())
@@ -936,13 +936,13 @@ class AsyncIODoc(AsyncIOClient):
             }
 
     async def pull(self, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use pull method on
+        assert self.RECORD.get("_id"), """Cannot use pull method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        await self.PATCH(None, self.RECORD['_id'], {"$pull": kwargs})
+        await self.PATCH(None, self.RECORD["_id"], {"$pull": kwargs})
         await self.reload()
 
         keys = list(kwargs.keys())
@@ -959,13 +959,13 @@ class AsyncIODoc(AsyncIOClient):
             }
 
     async def increment(self, query:dict={}, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use increment method on
+        assert self.RECORD.get("_id"), """Cannot use increment method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        query.update({"_id": self.RECORD['_id']})
+        query.update({"_id": self.RECORD["_id"]})
 
         await self.PATCH(None, query, {"$inc": kwargs}, multi=True)
         await self.reload()
@@ -984,13 +984,13 @@ class AsyncIODoc(AsyncIOClient):
             }
 
     async def update(self, query:dict={}, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use update method on
+        assert self.RECORD.get("_id"), """Cannot use update method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        query.update({"_id": self.RECORD['_id']})
+        query.update({"_id": self.RECORD["_id"]})
 
         keys = list(kwargs.keys())
         old_values = [ self.RECORD.get(key, None) for key in keys ]
@@ -1012,7 +1012,7 @@ class AsyncIODoc(AsyncIOClient):
             }
 
     async def patch(self, save:bool=False, trigger=None, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use patch method on
+        assert self.RECORD.get("_id"), """Cannot use patch method on
  a non-existing record.Use create method instead."""
 
         if "_id" in kwargs:
@@ -1045,7 +1045,7 @@ class AsyncIODoc(AsyncIOClient):
                 if not self.RECORD.get(key, None):
                     self.RECORD[key] = value
 
-        if self.RECORD.get('_id', None):
+        if self.RECORD.get("_id", None):
             _id = self.RECORD.pop("_id", None)
         try:
             if self._DOC_MARSHMALLOW:
@@ -1056,11 +1056,11 @@ class AsyncIODoc(AsyncIOClient):
             raise
         else:
             if _id:
-                self.RECORD['_id'] = _id
+                self.RECORD["_id"] = _id
                 await self.PUT(None, self.RECORD)
             else:
                 result = await self.POST(None, self.RECORD)
-                self.RECORD['_id'] = result.inserted_id
+                self.RECORD["_id"] = result.inserted_id
             if trigger:
                 trigger()
 

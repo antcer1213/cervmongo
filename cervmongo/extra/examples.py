@@ -42,14 +42,14 @@ def generate_custom_sync_doc(name:str, unique_id:str=None):
 
         @router.get("/purchases/{_id}", tags=["purchases"], response_model=ResponseDocument)
         async def get_document(self, _id:str):
-            """Return document by unique id, if supplied, else '_id' field"""
+            """Return document by unique id, if supplied, else "_id" field"""
             return self.load(_id)
 
         @router.post("/purchases/{_id}", tags=["purchases"], response_model=ResponseDocument)
         async def create_document(self, _id:str = None, datetime:str=None, username:str=None, user_collection:str=None, user_unique_id_field:str=None, **kwargs):
             """Create simple new document"""
 
-            if self.UNIQUE_ID: # INFO: assign _id to UNIQUE_ID if supplied, else '_id'
+            if self.UNIQUE_ID: # INFO: assign _id to UNIQUE_ID if supplied, else "_id"
                 kwargs[self.UNIQUE_ID] = _id
             else:
                 kwargs["_id"] = _id

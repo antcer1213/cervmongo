@@ -32,6 +32,7 @@ from .utils import (
                     yaml_dump,
                     yaml_load,
                     sort_list,
+                    flatten_dict,
                     )
 from .vars import (
                     DOC_ID,
@@ -224,7 +225,12 @@ class MongoListResponse(list):
     """the normal response for multiple documents when using cervmongo.main.SyncIOClient or cervmongo.aio.AsyncIOClient"""
     _sort = ASCENDING
     _index = 0
-    def __init__(self, cursor=[]):
+    _original = None
+
+    def __init__(self, cursor=[], _original=None):
+        if _original:
+            self._original = _original
+
         if isinstance(cursor, Cursor):
             self._cursor = cursor
             self._cursor.rewind()
@@ -262,6 +268,7 @@ class MongoListResponse(list):
             self.clear()
 
     def __iter__(self):
+        self._index = 0
         if self._cursor:
             self._cursor.rewind()
             return self._cursor
@@ -272,7 +279,13 @@ class MongoListResponse(list):
         if self._cursor:
             return self._cursor.__next__()
         else:
-            return super().__next__()
+            if self._index < self.__len__():
+                _ = self[self._index]
+                self._index += 1
+                return _
+            else:
+                self._index = 0
+                raise StopIteration
 
     def __getitem__(self, index):
         if self._cursor:
@@ -310,9 +323,20 @@ class MongoListResponse(list):
         """rewinds cursor, if any"""
         if self._cursor:
             self._cursor.rewind()
+        else:
+            self._index = 0
+
+    def flatten(self) -> typing.List[typing.Dict]:
+        """returns a MongoListResponse containing an array of flattened records, saving record of original"""
+        _o = self.list()
+        return MongoListResponse([flatten_dict(_) for _ in  _o], _original=_o)
+
+    def original(self):
+        """returns last (original) MongoListResponse if available, else self"""
+        return self._original if self._original else self
 
     def distinct(self, field:str="_id") -> typing.List[typing.Any]:
-        """returns list of distinct values based on field, defaults to '_id'. supports dot notation for nested values."""
+        """returns list of distinct values based on field, defaults to "_id". supports dot notation for nested values."""
         if self._cursor:
             self._cursor.rewind()
             return sorted(self._cursor.distinct(field), reverse=True if self._sort == -1 else False)

@@ -133,10 +133,10 @@ class SyncIOClient(MongoClient):
         if isinstance(record, str):
             one = True
             if "$oid" in record:
-                record = json_load(record)
+                record = {"$in": [json_load(record), record]}
             else:
                 try:
-                    record = DOC_ID.__supertype__(record)
+                    record = {"$in": [DOC_ID.__supertype__(record), record]}
                 except:
                     pass
         elif isinstance(record, DOC_ID.__supertype__):
@@ -264,7 +264,7 @@ class SyncIOClient(MongoClient):
         new_before = None
 
         if results:
-            _id = results[-1]['_id']
+            _id = results[-1]["_id"]
             try:
                 date = results[-1][sort].isoformat()
             except:
@@ -272,7 +272,7 @@ class SyncIOClient(MongoClient):
             if len(results) == limit:
                 new_after = template.format(_id=_id, date=date)
 
-            _id = results[0]['_id']
+            _id = results[0]["_id"]
             try:
                 date = results[0][sort].isoformat()
             except:
@@ -368,7 +368,7 @@ class SyncIOClient(MongoClient):
 
             If soft=true, creates collection ('deleted.{collection}')
             and inserts the deleted document there. field 'oid' is
-            guaranteed to equal the original document's '_id'.
+            guaranteed to equal the original document's "_id".
         """
         db = self.get_database()
         collection = collection or self._DEFAULT_COLLECTION
@@ -394,7 +394,7 @@ class SyncIOClient(MongoClient):
         elif isinstance(record_or_records, (list, tuple)):
             results = []
             for _id in record_or_records:
-                data_record = collection.find_one_and_delete({'_id': _id})
+                data_record = collection.find_one_and_delete({"_id": _id})
                 if soft:
                     try:
                         data_record["oid"] = data_record["_id"]
@@ -434,7 +434,7 @@ class SyncIOClient(MongoClient):
                 # TODO: provide a short clear exception?
                 raise
 
-    def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]='', data=False, query:dict={}) -> None:
+    def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]="", data=False, query:dict={}) -> None:
         """
             adds field with value provided to all records in collection that match query
 
@@ -443,20 +443,20 @@ class SyncIOClient(MongoClient):
         """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
-        query.update({field: {'$exists': False}})
+        query.update({field: {"$exists": False}})
         if data:
             records = self.GET(collection, query, fields={
                 data: True}, empty=[])
         else:
             records = self.GET(collection, query, fields={
-                '_id': True}, empty=[])
+                "_id": True}, empty=[])
 
         for record in records:
             if data:
-                self.PATCH(collection, record['_id'], {"$set": {
+                self.PATCH(collection, record["_id"], {"$set": {
                     field: record[data]}})
             else:
-                self.PATCH(collection, record['_id'], {"$set": {
+                self.PATCH(collection, record["_id"], {"$set": {
                     field: value}})
 
     def REMOVE_FIELD(self, collection, field:str, query:dict={}) -> None:
@@ -467,7 +467,7 @@ class SyncIOClient(MongoClient):
         """
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
-        query.update({field: {'$exists': True}})
+        query.update({field: {"$exists": True}})
         records = self.GET(collection, query, distinct=True)
 
         for record in records:
@@ -686,7 +686,7 @@ class SyncIOClient(MongoClient):
         assert collection, "collection must be of type str"
         collection = db[collection]
 
-        return collection.replace_one({'_id': original},
+        return collection.replace_one({"_id": original},
                     replacement, upsert=upsert)
 
     def PATCH(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, typing.List, str], updates:typing.Union[typing.Dict, typing.List], upsert:bool=False, w:int=1):
@@ -702,7 +702,7 @@ class SyncIOClient(MongoClient):
         if isinstance(id_or_query, (str, DOC_ID.__supertype__)):
             assert isinstance(updates, dict), "updates must be dict"
             id_or_query, _ = self._process_record_id_type(id_or_query)
-            query = {'_id': id_or_query}
+            query = {"_id": id_or_query}
 
             set_on_insert_id = {"$setOnInsert": query}
             updates.update(set_on_insert_id)
@@ -717,7 +717,7 @@ class SyncIOClient(MongoClient):
             results = []
             for i, _id in enumerate(id_or_query):
                 _id, _ = self._process_record_id_type(id_or_query)
-                query = {'_id': _id}
+                query = {"_id": _id}
                 set_on_insert_id = {"$setOnInsert": query}
                 updates[i].update(set_on_insert_id)
 
@@ -944,8 +944,8 @@ class SyncIODoc(SyncIOClient):
                     )
 
     def reload(self):
-        assert self.RECORD.get('_id')
-        self.RECORD = self.GET(self._DOC_TYPE, self.RECORD['_id'])
+        assert self.RECORD.get("_id")
+        self.RECORD = self.GET(self._DOC_TYPE, self.RECORD["_id"])
 
         return {
             "data": self._p_r(self.RECORD),
@@ -958,7 +958,7 @@ class SyncIODoc(SyncIOClient):
         return self.RECORD.get(self._DOC_ID, None)
 
     def create(self, save:bool=False, trigger=None, template:str="{total}", query:dict={}, **kwargs):
-        assert self.RECORD.get('_id') is None, """Cannot use create method on
+        assert self.RECORD.get("_id") is None, """Cannot use create method on
  an existing record. Use patch method instead."""
 
         if self._DOC_MARSHMALLOW:
@@ -985,13 +985,13 @@ class SyncIODoc(SyncIOClient):
             }
 
     def push(self, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use push method on
+        assert self.RECORD.get("_id"), """Cannot use push method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        self.PATCH(None, self.RECORD['_id'], {"$push": kwargs})
+        self.PATCH(None, self.RECORD["_id"], {"$push": kwargs})
         self.reload()
 
         keys = list(kwargs.keys())
@@ -1008,13 +1008,13 @@ class SyncIODoc(SyncIOClient):
             }
 
     def pull(self, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use pull method on
+        assert self.RECORD.get("_id"), """Cannot use pull method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        self.PATCH(None, self.RECORD['_id'], {"$pull": kwargs})
+        self.PATCH(None, self.RECORD["_id"], {"$pull": kwargs})
         self.reload()
 
         keys = list(kwargs.keys())
@@ -1031,13 +1031,13 @@ class SyncIODoc(SyncIOClient):
             }
 
     def increment(self, query:dict={}, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use increment method on
+        assert self.RECORD.get("_id"), """Cannot use increment method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        query.update({"_id": self.RECORD['_id']})
+        query.update({"_id": self.RECORD["_id"]})
 
         self.PATCH(None, query, {"$inc": kwargs}, multi=True)
         self.reload()
@@ -1056,13 +1056,13 @@ class SyncIODoc(SyncIOClient):
             }
 
     def update(self, query:dict={}, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use increment method on
+        assert self.RECORD.get("_id"), """Cannot use increment method on
  a non-existing record. Use create method instead."""
 
         if "_id" in kwargs:
             kwargs.pop("_id")
 
-        query.update({"_id": self.RECORD['_id']})
+        query.update({"_id": self.RECORD["_id"]})
 
         keys = list(kwargs.keys())
         old_values = [ self.RECORD.get(key, None) for key in keys ]
@@ -1084,7 +1084,7 @@ class SyncIODoc(SyncIOClient):
             }
 
     def patch(self, save=False, trigger=None, **kwargs):
-        assert self.RECORD.get('_id'), """Cannot use patch method on
+        assert self.RECORD.get("_id"), """Cannot use patch method on
  a non-existing record.Use create method instead."""
 
         if "_id" in kwargs:
@@ -1117,7 +1117,7 @@ class SyncIODoc(SyncIOClient):
                 if not self.RECORD.get(key, None):
                     self.RECORD[key] = value
 
-        if self.RECORD.get('_id', None):
+        if self.RECORD.get("_id", None):
             _id = self.RECORD.pop("_id", None)
         try:
             if self._DOC_MARSHMALLOW:
@@ -1128,11 +1128,11 @@ class SyncIODoc(SyncIOClient):
             raise
         else:
             if _id:
-                self.RECORD['_id'] = _id
+                self.RECORD["_id"] = _id
                 self.PUT(None, self.RECORD)
             else:
                 result = self.POST(None, self.RECORD)
-                self.RECORD['_id'] = result.inserted_id
+                self.RECORD["_id"] = result.inserted_id
             if trigger:
                 trigger()
 

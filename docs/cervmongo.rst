@@ -44,17 +44,17 @@ cervmongo.main submodule
    .. py:method:: UPLOAD(fileobj, filename=None, content_type=None, extension=None, **kwargs)
    .. py:method:: DOWNLOAD(filename_or_id=None, revision=- 1, skip=None, limit=None, sort=- 1, **query)
    .. py:method:: ERASE(filename_or_id, revision=- 1)
-   .. py:method:: INDEX(key='_id', sort=1, unique=False, reindex=False)
+   .. py:method:: INDEX(key="_id", sort=1, unique=False, reindex=False)
    .. py:method:: ADD_FIELD(field, value='', data=False, query={})
    .. py:method:: REMOVE_FIELD(field, query={})
    .. py:method:: DELETE(record_or_records, soft=False)
-   .. py:method:: GET(id_or_query={}, sort=1, key='_id', count=None, search=None, fields=None, page=None, perpage=False, limit=None, after=None, before=None, empty=None, distinct=None, one=False, **kwargs)
+   .. py:method:: GET(id_or_query={}, sort=1, key="_id", count=None, search=None, fields=None, page=None, perpage=False, limit=None, after=None, before=None, empty=None, distinct=None, one=False, **kwargs)
    .. py:method:: POST(record_or_records)
    .. py:method:: PUT(record_or_records)
    .. py:method:: PATCH(original, updates, w=1, upsert=False, multi=False, log=None)
    .. py:method:: REPLACE(original, replacement, upsert=False)
    .. py:method:: SEARCH(search, **kwargs)
-   .. py:method:: PAGINATED_QUERY(limit=20, sort=<Pagination Sort Fields._id: '_id'>, after=None, before=None, page=None, endpoint='/', ordering=-1, query={}, **kwargs)
+   .. py:method:: PAGINATED_QUERY(limit=20, sort=<Pagination Sort Fields._id: "_id">, after=None, before=None, page=None, endpoint='/', ordering=-1, query={}, **kwargs)
 
 cervmongo.aio submodule
 -----------------------
@@ -83,14 +83,14 @@ cervmongo.aio submodule
       :async:
    .. py:method:: ERASE(filename_or_id, revision=- 1)
       :async:
-   .. py:method:: INDEX(key='_id', sort=1, unique=False, reindex=False)
+   .. py:method:: INDEX(key="_id", sort=1, unique=False, reindex=False)
    .. py:method:: ADD_FIELD(field, value='', data=False, query={})
       :async:
    .. py:method:: REMOVE_FIELD(field, query={})
       :async:
    .. py:method:: DELETE(record_or_records, soft=False)
       :async:
-   .. py:method:: GET(id_or_query={}, sort=1, key='_id', count=None, search=None, fields=None, page=None, perpage=False, limit=None, after=None, before=None, empty=None, distinct=None, one=False, **kwargs)
+   .. py:method:: GET(id_or_query={}, sort=1, key="_id", count=None, search=None, fields=None, page=None, perpage=False, limit=None, after=None, before=None, empty=None, distinct=None, one=False, **kwargs)
       :async:
    .. py:method:: POST(record_or_records)
       :async:
@@ -102,7 +102,7 @@ cervmongo.aio submodule
       :async:
    .. py:method:: SEARCH(search, **kwargs)
       :async:
-   .. py:method:: PAGINATED_QUERY(limit=20, sort=<Pagination Sort Fields._id: '_id'>, after=None, before=None, page=None, endpoint='/', ordering=-1, query={}, **kwargs)
+   .. py:method:: PAGINATED_QUERY(limit=20, sort=<Pagination Sort Fields._id: "_id">, after=None, before=None, page=None, endpoint='/', ordering=-1, query={}, **kwargs)
       :async:
 
 cervmongo.models submodule

@@ -28,7 +28,7 @@ col_client = cervmongo.quick_load_client(
 col_recs = col_client.GET() # returns cursor as very cool MongoListResponse
 col_recs.count() # returns number of total documents in cursor
 col_recs.list() # returns list of documents in cursor
-col_recs.distinct() # returns list of unique values, default field '_id'
+col_recs.distinct() # returns list of unique values, default field "_id"
 col_recs.sort() # returns self, allows sorting
 # example of creating a document
 result = col_client.POST({"key": "value"}) # returns pymongo Response document

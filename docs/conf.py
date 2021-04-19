@@ -6,23 +6,6 @@
 import sphinx
 import sphinx_rtd_theme
 
-# ~ def monkeypatch(cls):
-    # ~ """ decorator to monkey-patch methods """
-    # ~ def decorator(f):
-        # ~ method = f.__name__
-        # ~ old_method = getattr(cls, method)
-        # ~ setattr(cls, method, lambda self, *args, **kwargs: f(old_method, self, *args, **kwargs))
-    # ~ return decorator
-
-# ~ # workaround until https://github.com/miyakogi/m2r/pull/55 is merged
-# ~ @monkeypatch(sphinx.registry.SphinxComponentRegistry)
-# ~ def add_source_parser(_old_add_source_parser, self, *args, **kwargs):
-    # ~ # signature is (parser: Type[Parser], **kwargs), but m2r expects
-    # ~ # the removed (str, parser: Type[Parser], **kwargs).
-    # ~ if isinstance(args[0], str):
-        # ~ args = args[1:]
-    # ~ return _old_add_source_parser(self, *args, **kwargs)
-
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -34,6 +17,8 @@ import sys
 if os.path.exists('../../trunk/'):
     print("found main trunk...")
     sys.path.insert(0, os.path.abspath('../../trunk/'))
+else:
+    raise ValueError("cannot find trunk path")
 
 # -- Project information -----------------------------------------------------
 import cervmongo
