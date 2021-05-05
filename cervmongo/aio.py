@@ -368,7 +368,7 @@ having some automated conveniences and defaults.
 
         return self.FILES.find(query, limit=limit, skip=skip, sort=sort, no_cursor_timeout=True)
 
-    async def DELETE(self, collection, record, soft:bool=False):
+    async def DELETE(self, collection, record, soft:bool=False, one:bool=False):
         db = self.get_default_database()
         if not collection:
             if hasattr(self, '_DEFAULT_COLLECTION'):
@@ -390,7 +390,10 @@ having some automated conveniences and defaults.
         if isinstance(record, (str, ObjectId)):
             return await collection.delete_one({"_id": record})
         elif isinstance(record, dict):
-            return await collection.delete_one(record)
+            if one:
+                return await collection.delete_one(record)
+            else:
+                return await collection.delete_many(record)
         else:
             results = []
             for _id in record:

@@ -360,7 +360,7 @@ class SyncIOClient(MongoClient):
         else:
             return DOC_ID.__supertype__()
 
-    def DELETE(self, collection:typing.Optional[str], record_or_records, soft:bool=False) -> typing.Union[MongoDictResponse, MongoListResponse]:
+    def DELETE(self, collection:typing.Optional[str], record_or_records, soft:bool=False, one:bool=False) -> typing.Union[MongoDictResponse, MongoListResponse]:
         """
             deletes the requested document(s)
 
@@ -382,26 +382,26 @@ class SyncIOClient(MongoClient):
             record_or_records = {"_id": record_or_records}
 
         if isinstance(record_or_records, dict):
-            data_record = collection.find_one_and_delete(record_or_records)
-            if soft:
-                try:
-                    data_record["oid"] = data_record["_id"]
-                    self.PUT("deleted."+collection, data_record)
-                except:
-                    data_record["oid"] = data_record.pop("_id")
-                    self.PUT("deleted."+collection, data_record)
-            return MongoDictResponse(data_record)
+            if one:
+                data_record = collection.find_one_and_delete(record_or_records)
+                if soft:
+                    self.POST("deleted."+collection, data_record)
+                return MongoDictResponse(data_record)
+            else:
+                if soft:
+                    data_record = self.GET(collection, record_or_records).list()
+                    [_.update({"oid": _.pop("_id")}) for _ in data_record]
+                    self.POST("deleted."+collection, data_record)
+                data_record = collection.delete_many(record_or_records)
+
+                return MongoDictResponse(data_record)
         elif isinstance(record_or_records, (list, tuple)):
             results = []
             for _id in record_or_records:
                 data_record = collection.find_one_and_delete({"_id": _id})
                 if soft:
-                    try:
-                        data_record["oid"] = data_record["_id"]
-                        self.PUT("deleted."+collection, data_record)
-                    except:
-                        data_record["oid"] = data_record.pop("_id")
-                        self.PUT("deleted."+collection, data_record)
+                    data_record["oid"] = data_record.pop("_id")
+                    self.POST("deleted."+collection, data_record)
                 results.append(data_record)
 
             return MongoListResponse(results)
