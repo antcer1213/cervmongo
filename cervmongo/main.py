@@ -394,7 +394,7 @@ class SyncIOClient(MongoClient):
                     self.POST("deleted."+collection, data_record)
                 data_record = collection.delete_many(record_or_records)
 
-                return MongoDictResponse(data_record)
+                return data_record
         elif isinstance(record_or_records, (list, tuple)):
             results = []
             for _id in record_or_records:
