@@ -377,10 +377,13 @@ class SyncIOClient(MongoClient):
         o_collection = collection[:]
         collection = db[collection]
 
-        record_or_records = self._process_record_id_type(record_or_records)[0]
-
-        if isinstance(record_or_records, (str, DOC_ID.__supertype__)):
-            record_or_records = {"_id": record_or_records}
+        if not isinstance(record_or_records, (list, tuple)):
+            record_or_records, _one = self._process_record_id_type(record_or_records)
+            one = _one if _one else one
+            if _one:
+                record_or_records = {"_id": record_or_records}
+        else:
+            record_or_records = self._process_record_id_type(record_or_records)[0]
 
         if isinstance(record_or_records, dict):
             if one:

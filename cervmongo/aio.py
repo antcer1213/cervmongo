@@ -379,7 +379,13 @@ having some automated conveniences and defaults.
 
         collection = db[collection]
 
-        record = self._process_record_id_type(record)[0]
+        if not isinstance(record, (list, tuple)):
+            record, _one = self._process_record_id_type(record)
+            one = _one if _one else one
+            if _one:
+                record = {"_id": record}
+        else:
+            record = self._process_record_id_type(record)[0]
 
         if soft:
             data_record = await self.GET(o_collection, record)
