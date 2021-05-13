@@ -375,17 +375,19 @@ having some automated conveniences and defaults.
                 collection = self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
+        o_collection = collection[:]
+
         collection = db[collection]
 
         record = self._process_record_id_type(record)[0]
 
         if soft:
-            data_record = await self.GET(collection, record)
+            data_record = await self.GET(o_collection, record)
             try:
-                await self.PUT("deleted."+collection, data_record)
+                await self.PUT("deleted."+o_collection, data_record)
             except:
                 data_record.pop("_id")
-                await self.PUT("deleted."+collection, data_record)
+                await self.PUT("deleted."+o_collection, data_record)
 
         if isinstance(record, (str, ObjectId)):
             return await collection.delete_one({"_id": record})

@@ -374,6 +374,7 @@ class SyncIOClient(MongoClient):
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
 
+        o_collection = collection[:]
         collection = db[collection]
 
         record_or_records = self._process_record_id_type(record_or_records)[0]
@@ -385,13 +386,13 @@ class SyncIOClient(MongoClient):
             if one:
                 data_record = collection.find_one_and_delete(record_or_records)
                 if soft:
-                    self.POST("deleted."+collection, data_record)
+                    self.POST("deleted."+o_collection, data_record)
                 return MongoDictResponse(data_record)
             else:
                 if soft:
-                    data_record = self.GET(collection, record_or_records).list()
+                    data_record = self.GET(o_collection, record_or_records).list()
                     [_.update({"oid": _.pop("_id")}) for _ in data_record]
-                    self.POST("deleted."+collection, data_record)
+                    self.POST("deleted."+o_collection, data_record)
                 data_record = collection.delete_many(record_or_records)
 
                 return data_record
@@ -401,7 +402,7 @@ class SyncIOClient(MongoClient):
                 data_record = collection.find_one_and_delete({"_id": _id})
                 if soft:
                     data_record["oid"] = data_record.pop("_id")
-                    self.POST("deleted."+collection, data_record)
+                    self.POST("deleted."+o_collection, data_record)
                 results.append(data_record)
 
             return MongoListResponse(results)
