@@ -412,7 +412,7 @@ class SyncIOClient(MongoClient):
         else:
             raise TypeError("record_or_records was of invalid type '{}'".format(type(record_or_records)))
 
-    def INDEX(self, collection, key:str="_id", sort:int=1, unique:bool=False, reindex:bool=False) -> None:
+    def INDEX(self, collection, key:typing.Union[typing.List, str]="_id", sort:typing.Union[typing.List, int]=1, unique:bool=False, reindex:bool=False) -> None:
         """
             creates an index, however most useful in constraining certain fields as unique
         """
@@ -424,19 +424,30 @@ class SyncIOClient(MongoClient):
         if reindex:
             collection.reindex()
         else:
-            name = "%sIndex%s" % (key, "Asc" if sort == 1 else "Desc")
-            try:
-                if not name in collection.index_information():
-                    collection.create_index([
-                        (key, sort)], name=name, background=True, unique=unique)
+            if not isinstance(key, (tuple, list)):
+                key = [key]
+            if not isinstance(sort, (tuple, list)):
+                sort = [sort for _ in range(len(key))]
+
+            _merged_key = "".join(["".join(_.split()) for _ in key])
+            _merged_sort = "".join(["Asc" if _ == 1 else "Desc" for _ in sort])
+
+            if _merged_key == "TEXT":
+                # INFO: a full text-index is recommended when no fixed schema / document structure is in place
                 try:
-                    # INFO: a full text-index is recommended when no fixed schema / document structure is in place
                     collection.create_index([("$**", "text")], name="textIndex", background=True)
                 except:
-                    pass
-            except:
-                # TODO: provide a short clear exception?
-                raise
+                    # TODO: provide a short clear exception?
+                    raise
+            else:
+                name = "{}Index{}".format(_merged_key, _merged_sort)
+                try:
+                    if not name in collection.index_information():
+                        collection.create_index([
+                            (_k, sort[_i]) for _i, _k in enumerate(key)], name=name, background=True, unique=unique)
+                except:
+                    # TODO: provide a short clear exception?
+                    raise
 
     def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]="", data=False, query:dict={}) -> None:
         """
