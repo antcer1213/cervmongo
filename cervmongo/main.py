@@ -466,13 +466,15 @@ class SyncIOClient(MongoClient):
             records = self.GET(collection, query, fields={
                 "_id": True}, empty=[])
 
-        for record in records:
+        for record in records.list():
             if data:
                 self.PATCH(collection, record["_id"], {"$set": {
-                    field: record[data]}})
+                    field: record[data]
+                    }})
             else:
                 self.PATCH(collection, record["_id"], {"$set": {
-                    field: value}})
+                    field: value
+                    }})
 
     def REMOVE_FIELD(self, collection, field:str, query:dict={}) -> None:
         """
@@ -527,7 +529,7 @@ class SyncIOClient(MongoClient):
 
         return self.FILES.find(query, limit=limit, skip=skip, sort=sort, no_cursor_timeout=True)
 
-    def GET(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, str]={}, sort:int=1, key:str="_id", count:bool=None, search:str=None, fields:dict=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
+    def GET(self, collection, id_or_query:typing.Union[DOC_ID, typing.Dict, str]={}, sort:int=1, key:str="_id", count:bool=None, search:str=None, fields:typing.Optional[typing.Union[typing.List, dict]]=None, page:int=None, perpage:int=False, limit:int=None, after:str=None, before:str=None, empty=None, distinct:str=None, one:bool=False, **kwargs):
         """
             record can be either _id (accepts unicode form of ObjectId, as well as extended JSON bson format) or query
 
@@ -554,6 +556,12 @@ class SyncIOClient(MongoClient):
         cols = list(set(collection))
         results = []
         number_of_results = len(cols)
+
+        if fields:
+            if isinstance(fields, (list, tuple)):
+                fields = {_: True for _ in fields}
+        else:
+            fields = None
 
         if distinct == True:
             distinct = "_id"
