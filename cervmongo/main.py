@@ -739,7 +739,7 @@ class SyncIOClient(MongoClient):
 
             results = []
             for i, _id in enumerate(id_or_query):
-                _id, _ = self._process_record_id_type(id_or_query)
+                _id, _ = self._process_record_id_type(_id)
                 query = {"_id": _id}
                 set_on_insert_id = {"$setOnInsert": query}
                 updates[i].update(set_on_insert_id)
