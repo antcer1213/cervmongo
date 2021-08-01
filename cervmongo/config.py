@@ -72,6 +72,7 @@ class Config(metaclass=MetaConfig):
     DEBUG_LEVEL:int = Defaults.DEBUG_LEVEL #: The level at which to display information, defaults to logging.warning
     JSON_SAMPLE_PATH:str = Defaults.JSON_SAMPLE_PATH #: For use with JSON sample records to simplify schema process of new documents
     JSON_SCHEMA_PATH:str = Defaults.JSON_SCHEMA_PATH #: For use with JSON schema documents for validating new documents on creation
+    LIST_MODE:bool = False #: Only implemented in SyncIOClient. Instructs results to convert any Cursor to list instantly, ensuring no partially-filled cursors remain open
 
     @classmethod
     def reset(cls) -> None:
@@ -83,7 +84,7 @@ class Config(metaclass=MetaConfig):
                 setattr(cls, attr, value)
 
     @classmethod
-    def set_debug_level(cls, debug_level:int) -> None:
+    def set_debug_level(cls, debug_level:int) -> ConfigClass:
         """
             sets debug level of application, default is logging.warning
         """
@@ -91,6 +92,30 @@ class Config(metaclass=MetaConfig):
         cls.DEBUG_LEVEL = debug_level
         logger.setLevel(debug_level)
         ch.setLevel(debug_level)
+        return cls
+
+    @classmethod
+    def enable_list_mode(cls) -> ConfigClass:
+        """
+            sets cls.LIST_MODE to True; use corresponding function if SyncIOClient instantiated.
+        """
+        cls.LIST_MODE = True
+        return cls
+
+    @classmethod
+    def disable_list_mode(cls) -> ConfigClass:
+        """
+            sets cls.LIST_MODE to False; use corresponding function if SyncIOClient instantiated.
+        """
+        cls.LIST_MODE = False
+        return cls
+
+    @classmethod
+    def get_list_mode(cls) -> bool:
+        """
+            returns cls.LIST_MODE value
+        """
+        return cls.LIST_MODE
 
     @classmethod
     def set_mongo_db(cls:typing.Type[ConfigClass], database_name:str) -> ConfigClass:

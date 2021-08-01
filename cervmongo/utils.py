@@ -76,9 +76,9 @@ def flatten_dict(dictionary: dict) -> dict:
                     subvalue = flatten_dict(subvalue)
                     for subsubkey, subsubvalue in subvalue.items():
                         new_dict["{}.{}.{}".format(key, subkey, subsubkey)] = subvalue
-        elif isinstance(value, (tuple, list)):
-            for subkey, subvalue in enumerate(value):
-                new_dict["{}.{}".format(key, subkey)] = subvalue
+        # ~ elif isinstance(value, (tuple, list)): # NOTE: preserve lists
+            # ~ for subkey, subvalue in enumerate(value):
+                # ~ new_dict["{}.{}".format(key, subkey)] = subvalue
         else:
             new_dict[key] = value
 

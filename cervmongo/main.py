@@ -89,6 +89,7 @@ class SyncIOClient(MongoClient):
     _LOGGING_COND_PUT = None
     _LOGGING_COND_PATCH = None
     _LOGGING_COND_DELETE = None
+    _LIST_MODE:bool = False
 
     def __init__(self, mongo_uri:typing.Optional[str]=None, default_collection:typing.Optional[str]=None, **kwargs):
         self._MONGO_URI = mongo_uri or self._MONGO_URI
@@ -106,6 +107,8 @@ class SyncIOClient(MongoClient):
                 setattr(self, kwarg.upper(), kwargs.pop(kwarg))
 
         MongoClient.__init__(self, self._MONGO_URI, **kwargs)
+
+        self._LIST_MODE = Config.LIST_MODE
 
         db = self.get_default_database()
         if not getattr(db, "name", None):
@@ -149,6 +152,24 @@ class SyncIOClient(MongoClient):
                 record = json_load(record)
                 one = True
         return (record, one)
+
+    def enable_list_mode(self) -> None:
+        """
+            enables _LIST_MODE
+        """
+        self._LIST_MODE = True
+
+    def disable_list_mode(self) -> None:
+        """
+            disables _LIST_MODE
+        """
+        self._LIST_MODE = False
+
+    def get_list_mode(self) -> None:
+        """
+            returns value of _LIST_MODE
+        """
+        return self._LIST_MODE
 
     def set_database(self, database:str) -> None:
         """
@@ -408,7 +429,7 @@ class SyncIOClient(MongoClient):
                     self.POST("deleted."+o_collection, data_record)
                 results.append(data_record)
 
-            return MongoListResponse(results)
+            return MongoListResponse(self._check_if_list_mode(results))
         else:
             raise TypeError("record_or_records was of invalid type '{}'".format(type(record_or_records)))
 
@@ -444,12 +465,13 @@ class SyncIOClient(MongoClient):
                 try:
                     if not name in collection.index_information():
                         collection.create_index([
-                            (_k, sort[_i]) for _i, _k in enumerate(key)], name=name, background=True, unique=unique)
+                            (_k, sort[_i]) for _i, _k in enumerate(key)
+                            ], name=name, background=True, unique=unique)
                 except:
                     # TODO: provide a short clear exception?
                     raise
 
-    def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]="", data=False, query:dict={}) -> None:
+    def ADD_FIELD(self, collection, field:str, value:typing.Union[typing.Dict, typing.List, str, int, float, bool]=None, data=False, query:dict={}) -> None:
         """
             adds field with value provided to all records in collection that match query
 
@@ -459,12 +481,10 @@ class SyncIOClient(MongoClient):
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {"$exists": False}})
-        if data:
-            records = self.GET(collection, query, fields={
-                data: True}, empty=[])
-        else:
-            records = self.GET(collection, query, fields={
-                "_id": True}, empty=[])
+
+        records = self.GET(collection, query, fields={
+            data or "_id": True
+            }, empty=[])
 
         for record in records.list():
             if data:
@@ -583,12 +603,11 @@ class SyncIOClient(MongoClient):
                     else:
                         results.append(collection.estimated_document_count(**kwargs))
                 elif distinct:
-                    cursor = collection.find(query, **kwargs)
-                    results.append(cursor.sort([(key, sort)]).distinct(distinct))
+                    results.append(collection.find(query, **kwargs).sort([(key, sort)]).distinct(distinct))
                 elif perpage:
                     total = (page - 1) * perpage
                     cursor = collection.find(query, projection=fields, **kwargs)
-                    results.append(MongoListResponse(cursor.sort([(key, sort)]).skip(total).limit(perpage)))
+                    results.append(MongoListResponse(self._check_if_list_mode(cursor.sort([(key, sort)]).skip(total).limit(perpage))))
                 elif limit:
                     if any((query, after, before)):
                         query = {"$and": [
@@ -622,13 +641,13 @@ class SyncIOClient(MongoClient):
                         results.append(cursor)
                     else:
                         cursor = collection.find(query, projection=fields, **kwargs).sort([(key, sort)]).limit(limit)
-                        results.append(MongoListResponse(cursor))
+                        results.append(MongoListResponse(self._check_if_list_mode(cursor)))
                 elif one:
                     val = collection.find_one(query, projection=fields, sort=[(key, sort)], **kwargs)
                     results.append(MongoDictResponse(val) if val else empty)
                 else:
                     cursor = collection.find(query, projection=fields, **kwargs).sort([(key, sort)])
-                    results.append(MongoListResponse(cursor))
+                    results.append(MongoListResponse(self._check_if_list_mode(cursor)))
             elif search:
                 try:
                     cursor = collection.find({"$text": {"$search": search}})
@@ -638,8 +657,9 @@ class SyncIOClient(MongoClient):
                         results.append(cursor.distinct(distinct))
                     if perpage:
                         total = (page - 1) * perpage
-                        results.append(MongoListResponse(cursor.sort([(key, sort)]).skip(total).limit(perpage)))
-                    results.append(MongoListResponse(cursor.sort([(key, sort)])))
+                        results.append(MongoListResponse(self._check_if_list_mode(cursor.sort([(key, sort)]).skip(total).limit(perpage))))
+                    else:
+                        results.append(MongoListResponse(self._check_if_list_mode(cursor.sort([(key, sort)]))))
                 except:
                     cursor = collection.command('textIndex', search=search)
                     if count:
@@ -648,8 +668,9 @@ class SyncIOClient(MongoClient):
                         results.append(cursor.distinct(distinct))
                     if perpage:
                         total = (page - 1) * perpage
-                        results.append(MongoListResponse(cursor.sort([(key, sort)]).skip(total).limit(perpage)))
-                    results.append(MongoListResponse(cursor.sort([(key, sort)])))
+                        results.append(MongoListResponse(self._check_if_list_mode(cursor.sort([(key, sort)]).skip(total).limit(perpage))))
+                    else:
+                        results.append(MongoListResponse(self._check_if_list_mode(cursor.sort([(key, sort)]))))
             else:
                 raise Error("unidentified error")
 
@@ -702,6 +723,11 @@ class SyncIOClient(MongoClient):
             return collection.find_one_and_replace(query, record_or_records, upsert=True)
         else:
             raise TypeError("invalid record_or_records type '{}' provided".format(type(record_or_records)))
+
+    def _check_if_list_mode(self, results):
+        if self._LIST_MODE:
+            results = list(results)
+        return results
 
     def REPLACE(self, collection, original, replacement, upsert:bool=False):
         db = self.get_database()
