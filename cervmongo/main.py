@@ -313,8 +313,6 @@ class SyncIOClient(MongoClient):
                     if not check_ahead:
                         new_after = None
 
-
-
         response = {
             "data": results,
             "details": {
@@ -410,6 +408,7 @@ class SyncIOClient(MongoClient):
             if one:
                 data_record = collection.find_one_and_delete(record_or_records)
                 if soft:
+                    data_record["oid"] = data_record.pop("_id", None)
                     self.POST("deleted."+o_collection, data_record)
                 return MongoDictResponse(data_record)
             else:
@@ -425,7 +424,7 @@ class SyncIOClient(MongoClient):
             for _id in record_or_records:
                 data_record = collection.find_one_and_delete({"_id": _id})
                 if soft:
-                    data_record["oid"] = data_record.pop("_id")
+                    data_record["oid"] = data_record.pop("_id", None)
                     self.POST("deleted."+o_collection, data_record)
                 results.append(data_record)
 

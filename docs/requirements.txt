@@ -1,0 +1,4 @@
+sphinx<3.2.0
+sphinx_rtd_theme
+sphinx_autodoc_typehints
+m2r2

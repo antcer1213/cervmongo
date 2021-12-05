@@ -1,6 +1,6 @@
-pymongo
+uuid
+pymongo<4,>=3.12
 python-dateutil
 jsonschema
 dataclasses
-uuid
 PyYAML
