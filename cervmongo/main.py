@@ -504,10 +504,8 @@ class SyncIOClient(MongoClient):
         collection = collection or self._DEFAULT_COLLECTION
         assert collection, "collection must be of type str"
         query.update({field: {"$exists": True}})
-        records = self.GET(collection, query, distinct=True)
 
-        for record in records:
-            self.PATCH(collection, record, {"$unset": {field: ""}})
+        self.PATCH(collection, query, {"$unset": {field: ""}})
 
     def UPLOAD(self, fileobj:typing.Union[typing.IO, str], filename:str=None, content_type:str=None, extension:str=None, **kwargs):
         """

@@ -402,8 +402,12 @@ class MongoListResponse(list):
     def list(self) -> typing.List[typing.Dict]:
         """returns a new list representation of the current cursor"""
         if self._cursor:
-            self._cursor.rewind()
-            return MongoListResponse(list(self._cursor))
+            cursor = self._cursor
+            cursor.rewind()
+            self = MongoListResponse(list(cursor))
+            cursor.close()
+            self._cursor = None
+            return self
         else:
             return self
 
